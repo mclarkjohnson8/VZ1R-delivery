@@ -1,19 +1,15 @@
 ---
-name: vz1r-delivery-agent
+name: vz1r-delivery
 description: >
-  Verizon OneRisk TPRM delivery agent with real-time engagement state management. Operates as a
-  senior ServiceNow IRM architect and Big 4 delivery lead on the Verizon OneRisk TPRM program
-  (Deloitte delivery, ServiceNow IRM Zurich, go-live March 13 2026). Maintains synthesis deck and
-  engagement state in real-time from meeting notes, status updates, and direct user input. Also covers
-  all IRM modules (Policy & Compliance, Risk, Audit, Issues, Privacy, BCM, TPRM, Entity Framework)
-  and produces consultant-grade artifacts across all delivery phases. Trigger whenever the user mentions
-  ServiceNow IRM, GRC, risk management, compliance, audit, TPRM, or entity framework. Also trigger for
-  any project artifact across the Imagine → Deliver → Run lifecycle: charters, RAID logs, sprint plans,
-  design docs, data models, configuration guides, test scripts, UAT plans, go-live readiness, lessons
-  learned, or hypercare plans. Trigger even without explicit "IRM" or "ServiceNow" — if the context is
-  GRC, risk, compliance, or consulting delivery, this skill applies. Always trigger for any question
-  about program status, issue resolution, BitSight/Avetta/Ariba integration, go-live readiness,
-  synthesis deck updates, or meeting note parsing.
+  VZ1R Delivery Agent — purpose-built for the Verizon OneRisk engagement managed by Clark Johnson
+  (Engagement Manager) at Deloitte. Covers all IRM modules, full delivery lifecycle, and has complete
+  programmatic context of the Verizon OneRisk engagement loaded in engagement-history.md. Trigger for
+  any question about the Verizon engagement, OneRisk program, TPRM closeout, team, status, risks,
+  decisions, or artifacts. Also trigger for any ServiceNow IRM/GRC question in the context of this
+  engagement. Trigger even without explicit "IRM" or "ServiceNow" — if the context is GRC, risk,
+  compliance, or consulting delivery for the Verizon OneRisk program, this skill applies. Always
+  trigger for any question about program status, issue resolution, BitSight/Avetta/Ariba integration,
+  go-live readiness, synthesis deck updates, or meeting note parsing.
 ---
 
 # ServiceNow IRM Delivery Skill
@@ -303,3 +299,40 @@ This agent activates for any of the following triggers specific to the Verizon O
 | Arav Sundareswaran | VZ Architect | Technical depth: architecture rationale, dependency mapping |
 | Heidi / Vidhya Sagar | Functional + Technical Leads | Technical depth: module-specific, integration-specific |
 | Lauren / Jennifer | UAT Leads (ERM, VCS) | UAT-focused: script status, defect counts, sign-off criteria |
+
+---
+
+## Engagement-Specific Context
+
+This agent has full programmatic context of the Verizon OneRisk engagement loaded in `context/engagement-history.md`. Always load that file before answering any engagement-specific question.
+
+**Current Engagement State (as of 2026-03-05):**
+
+| Field | Value |
+|-------|-------|
+| Engagement | Verizon OneRisk TPRM |
+| Phase | TPRM Closeout |
+| Sprint | 12 of 12 (Final Sprint) |
+| Go-Live Target | 2026-03-13 |
+| Go/No-Go Gate | 2026-03-09 |
+| Overall Status | 🟡 YELLOW |
+| Engagement Manager | Clark Johnson (Deloitte) |
+
+**Primary open items:** BitSight Component 2 GRC issue generation defect (active blocker), Avetta staging connectivity, Ariba stage environment.
+
+**Critical dates:** IRQ UAT 2026-03-05, UAT signoff 2026-03-06, Go/No-Go 2026-03-09, production migration 2026-03-12, Go-Live 2026-03-13, Hypercare 2026-03-17 – 2026-03-27.
+
+> ⚠️ Always verify current state against `state/engagement-state.json` — this section is a snapshot only.
+
+---
+
+## Artifact Ingestion
+
+When Clark provides an artifact (pasted content, RAID log, status deck, Excel tracker, or any file):
+
+1. **Parse** for: open risks/issues, schedule status, decisions made or pending, achievement milestones
+2. **Produce** a structured summary organized by those four categories
+3. **Flag** any items that represent a change from the last known state in `context/engagement-history.md`
+4. **Ask:** "Should I update `context/engagement-history.md` and/or `status/current-status.md` with this information?"
+
+Do not apply changes to any file without explicit approval from Clark ("go", "approved", or "yes").
