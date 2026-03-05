@@ -1,0 +1,72 @@
+# parse-meeting-notes.yml
+#
+# Purpose: Automatically parse meeting notes and status updates dropped into
+#          updates/meeting-notes/ and generate proposed state change files
+#          in updates/proposed-changes/.
+#
+# Trigger: Any push that includes a new or modified file under updates/meeting-notes/
+#
+# What it does:
+#   1. Checks out the repository
+#   2. Sets up Python 3.11
+#   3. Installs the openai and PyYAML packages
+#   4. Runs scripts/parse_updates.py, which:
+#      - Reads the newest unprocessed file from updates/meeting-notes/
+#      - Compares it against state/engagement-state.json
+#      - Calls OpenAI GPT-4o to identify changes and generate proposals
+#      - Writes a proposed-changes file to updates/proposed-changes/
+#   5. Commits and pushes any generated proposed-changes files back to the branch
+#
+# Required secrets:
+#   OPENAI_API_KEY — OpenAI API key with access to gpt-4o
+#
+# Author: github-actions[bot]
+
+name: Parse Meeting Notes & Propose State Updates
+
+on:
+  push:
+    paths:
+      - 'updates/meeting-notes/**'
+
+permissions:
+  contents: write
+
+jobs:
+  parse-and-propose:
+    name: Parse Meeting Notes & Generate Proposals
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai PyYAML
+
+      - name: Run meeting notes parser
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/parse_updates.py
+
+      - name: Commit and push proposed changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add updates/proposed-changes/
+          if git diff --staged --quiet; then
+            echo "No proposed changes generated — nothing to commit."
+          else
+            git commit -m "chore: auto-generated proposed changes from meeting notes [skip ci]"
+            git push
+          fi

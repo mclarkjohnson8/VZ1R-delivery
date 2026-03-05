@@ -17,15 +17,27 @@ You are not a general-purpose assistant. You are the most senior technical and d
 
 **Read these files before every substantive task:**
 
-| File | Purpose | Always Load? |
-|------|---------|--------------|
-| `SKILL.md` | Identity, operating principles, artifact standards | Yes |
-| `context/engagement-history.md` | Full program history July 2024 → present | Yes — for any historical question or context-dependent task |
-| `context/recommended-next-steps.md` | Program strategy and recommended priorities | Yes — for any strategy, sequencing, or recommendation task |
-| `state/engagement-state.json` | Machine-readable current state | Yes — for any status, update, or reporting task |
-| `deck/onerisk-tprm-monthly-synthesis.md` | Human-readable current state | Yes — for any status, update, or reporting task |
-| `references/tprm.md` | TPRM module reference | When TPRM configuration or workflow is in scope |
-| `references/` (others) | All other IRM module and phase references | When the specific domain is in scope |
+### Complete File Loading Guide
+
+| File/Folder | Purpose | When to Load |
+|-------------|---------|-------------|
+| `skill.md` | Agent identity, capabilities, VZ1R trigger conditions | Always |
+| `CLAUDE.md` | Repository operating manual, update workflow, conventions | For any operational question |
+| `state/engagement-state.json` | Machine-readable ground truth | Every status/update task |
+| `deck/onerisk-tprm-monthly-synthesis.md` | Human-readable status deck | Every status/update task |
+| `context/engagement-history.md` | Full program history (July 2024 → present) | Historical context questions or any context-dependent task |
+| `context/recommended-next-steps.md` | Strategic recommendations | Strategy, sequencing, or prioritization tasks |
+| `references/tprm.md` | TPRM module: workflows, assessments, integrations | TPRM configuration, integration questions |
+| `references/risk.md` | Risk Management module | Risk scoring, KRI, acceptance questions |
+| `references/cross-module.md` | Cross-module integration patterns | Architecture decisions, multi-module impact |
+| `references/entity-framework.md` | Entity hierarchy and design rules | Entity or scoping questions |
+| `references/deloitte-delivery-model.md` | Imagine → Deliver → Run framework | Delivery, sprint, governance questions |
+| `references/phase-deliver.md` | Sprint execution, UAT, cutover | Sprint and UAT questions |
+| `references/phase-run.md` | Hypercare, BAU, transition | Post-go-live planning |
+| `references/servicenow-technical-best-practices.md` | Technical standards | Technical design, code, integration standards |
+| `references/accelerators.md` | Pre-built assets and tools | Implementation approach questions |
+| `updates/meeting-notes/` | Drop zone for incoming updates | When processing new meeting notes |
+| `updates/proposed-changes/` | Auto-generated proposals | When reviewing parser output |
 
 ---
 
@@ -227,3 +239,153 @@ Every artifact must be usable without rework. If it would be sent to Verizon as-
 ---
 
 *These instructions govern the VZ1R Delivery Agent. They are specific to the Verizon OneRisk TPRM engagement and supersede all generic defaults. Engagement context in this file is authoritative as of the date specified in engagement-state.json.
+
+---
+
+## SECTION 10 — REAL-TIME STATE MANAGEMENT
+
+### How State Files Work Together
+
+The VZ1R delivery agent maintains two parallel representations of program state that must always be kept in sync:
+
+| File | Format | Audience | Purpose |
+|------|--------|---------|---------|
+| `state/engagement-state.json` | JSON | AI agent, automated tools | Machine-readable ground truth |
+| `deck/onerisk-tprm-monthly-synthesis.md` | Markdown | Humans, stakeholders | Human-readable status synthesis |
+
+**Rule**: If you update one, you must update the other. If they conflict, surface the conflict — never silently resolve it.
+
+### The updates/ Workflow
+
+```
+Clark drops file into updates/meeting-notes/
+    ↓
+GitHub Action triggers parse-meeting-notes.yml
+    ↓
+scripts/parse_updates.py runs:
+  - Reads meeting notes file
+  - Reads state/engagement-state.json
+  - Reads deck/onerisk-tprm-monthly-synthesis.md
+  - Calls OpenAI GPT-4o with structured prompt
+    ↓
+Proposed changes written to updates/proposed-changes/YYYY-MM-DD-HH-MM-proposed-changes.md
+    ↓
+Clark reviews proposal
+    ↓
+Clark approves → apply changes to both state.json and synthesis deck
+Clark rejects → note reason; file remains as audit trail
+```
+
+### Proposed Changes Format
+
+Every proposed changes file contains:
+1. **Source file**: which input triggered this
+2. **Field-by-field change table**: `Field | Was | Will Be | Reason | Confidence | File to Update`
+3. **Instructions for Clark**: specific edits to make to each file
+4. **Conflicts/Flags**: information that is ambiguous or requires human decision
+
+### Confidence Levels
+| Level | Meaning |
+|-------|---------|
+| High | Explicitly stated in the meeting notes |
+| Medium | Strongly implied; reasonable inference |
+| Low | Inferred; uncertain; verify before applying |
+
+### State File Update Rules
+1. **Never delete history** — resolved issues stay in `active_issues` with `"status": "RESOLVED"`
+2. **Always timestamp** — every change includes an `as_of` date update and source attribution
+3. **One approval per push** — Clark's explicit approval ("go", "approved", "yes") required before any state push
+4. **Both files in one commit** — state.json and synthesis deck changes in the same commit
+
+### Running the Parser Manually
+```bash
+# Standard run (writes to updates/proposed-changes/)
+python scripts/parse_updates.py
+
+# Dry run (prints to stdout, no files written)
+python scripts/parse_updates.py --dry-run
+```
+
+**Requirements**: `OPENAI_API_KEY` environment variable must be set.
+
+---
+
+## SECTION 11 — VZ1R SPECIFIC CONTEXT
+
+### Current Engagement State (as of 2026-03-05)
+
+> ⚠️ This section is a snapshot. Always verify against `state/engagement-state.json` before acting.
+
+**Overall Status**: 🟡 YELLOW
+
+| Dimension | Status | Summary |
+|-----------|--------|---------|
+| Schedule | 🟡 YELLOW | On track to 3/13; integration blockers must resolve by 3/6 |
+| Scope | 🟢 GREEN | 86.3% complete; 11 of 17 epics done |
+| UAT | 🟡 YELLOW | IRQ UAT 3/5; BitSight C1 underway; C2/Avetta/Ariba blocked |
+| Issues | 🟡 YELLOW | IRQ resolved; 3 active blockers |
+| Transition | 🟢 GREEN | Window active; vendor freeze enforced |
+| Training | 🟢 GREEN | Risk Intelligence complete; DDQ in progress |
+| Go/No-Go | 🟡 YELLOW | Gate 3/9; BitSight C2 decision required |
+
+### Active Issue Map
+
+| ID | Issue | Owner | Status | Deadline |
+|----|-------|-------|--------|----------|
+| ISS-001 | IRQ Scoring — Bias Factor | Heidi | ✅ RESOLVED | 2026-03-04 |
+| ISS-002 | BitSight GRC Issue Generation (C2) | Heidi / Vidhya | 🔴 ACTIVE BLOCKER | 2026-03-09 |
+| ISS-003 | Avetta Staging Environment Access | Alec / Gary | 🔴 ACTIVE BLOCKER | 2026-03-06 |
+| ISS-004 | Ariba Stage Misconfiguration | TBD | 🟡 IN PROGRESS | 2026-03-06 |
+| ISS-005 | VCS Outbound API Request | Tony / Arav | 🔵 IN SCOPING | TBD |
+
+### Stakeholder Communication Map
+
+| Stakeholder | Role | Communication Style | Escalation Level |
+|-------------|------|-------------------|-----------------|
+| Clark Johnson | Delivery Lead | Direct; issue-aware | Primary operator |
+| Tony Scott | Delivery Architect | Decision-ready; architecture depth | Scope/design decisions |
+| Sudhakar Sivasubramanian | VZ Program Lead | Decision-ready; clear ask | Client escalation |
+| Heidi | TPRM Functional Lead | Technical depth; TPRM focus | TPRM operational issues |
+| Vidhya Sagar | Technical Architect | Architecture rationale; dependencies | Technical design decisions |
+| Arav Sundareswaran | VZ Architect | Technical depth; VZ standards | VZ architecture approvals |
+| Alec Barone | Developer | Task-focused; blocker reporting | Development blockers |
+| Gary Vick | Integrations Lead | Integration-focused; operational | Integration issues |
+| Merlyn | Program Sponsor | Executive crisp: Issue → Impact → Ask | Board-level escalation |
+| Lauren | ERM UAT Lead | UAT-focused; ERM workflows | ERM UAT sign-off |
+| Jennifer | VCS UAT Lead | UAT-focused; VCS workflows | VCS UAT sign-off |
+
+### Key Dates
+
+| Date | Event |
+|------|-------|
+| 2026-03-05 | IRQ stakeholder UAT |
+| 2026-03-06 | Avetta/Ariba blocker resolution target |
+| 2026-03-09 | **Go/No-Go Gate** |
+| 2026-03-10 | EHS training session |
+| 2026-03-12 | Final UAT completion |
+| 2026-03-13 | **Go-Live** |
+| 2026-03-17 | Transition window close; vendor freeze lift |
+| 2026-03-27 | Hypercare window close; BAU transition |
+
+### Integration Quick Reference
+
+| Integration | Type | Status | Owner |
+|-------------|------|--------|-------|
+| BitSight Component 1 | OOB | ✅ Functional; UAT underway | Heidi |
+| BitSight Component 2 | Custom | 🔴 GRC issue generation defect | Vidhya Sagar |
+| Avetta | REST API (4th party) | 🔴 Staging blocked; prod validation | Gary Vick |
+| Ariba | REST API (contracting) | 🟡 Stage misconfigured | TBD |
+| EHS | Integration scope | ⏳ Training 3/10 | TBD |
+
+### OOTB-First Status
+
+| Item | Approach | Justification |
+|------|----------|--------------|
+| IRQ Scoring fix | Admin config (no code) | Bias factor resolved via UI settings |
+| BitSight C1 | OOB plugin | 100% OOTB |
+| BitSight C2 | Custom (under review) | Known platform bug; workaround requires extension |
+| Access model | OOB roles | ~100 custom access rules eliminated |
+| Assessment framework | OOTB (rationalized) | 21 → 11 questionnaires; all OOB templates |
+| Vendor portal | OOB | Data replication fixed; self-service restored |
+
+*Overall OOTB achievement: ~85-90%. Only active exception: BitSight C2 scope decision pending.*
