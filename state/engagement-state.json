@@ -1,0 +1,153 @@
+{
+  "meta": {
+    "engagement": "Verizon OneRisk TPRM",
+    "client": "Verizon",
+    "delivery_partner": "Deloitte",
+    "platform": "ServiceNow IRM (Zurich release)",
+    "as_of": "2026-03-05",
+    "sprint": "12 of 12",
+    "sprint_day": "2 of 10",
+    "go_live_target": "2026-03-13",
+    "go_no_go_gate": "2026-03-09"
+  },
+  "overall_status": {
+    "color": "YELLOW",
+    "summary": "IRQ resolved without customization; BitSight Component 2 and external integrations (Avetta, Ariba) are active blockers; UAT underway"
+  },
+  "dimensions": {
+    "schedule": {
+      "color": "YELLOW",
+      "detail": "On track to 3/13; BitSight C2 and external integration blockers must resolve by 3/5-3/6"
+    },
+    "scope": {
+      "color": "GREEN",
+      "detail": "86.3% complete; 11 of 17 epics done; 5 finalizing"
+    },
+    "uat": {
+      "color": "YELLOW",
+      "detail": "IRQ UAT targeted 3/5; BitSight C1 UAT underway; C2 UAT pending fix; Avetta and Ariba UAT blocked"
+    },
+    "risks_issues": {
+      "color": "YELLOW",
+      "detail": "IRQ resolved; BitSight GRC issue generation active blocker; Avetta firewall approved pending validation; Ariba stage misconfiguration pending fix"
+    },
+    "transition": {
+      "color": "GREEN",
+      "detail": "Transition window active 2/10-3/17; on track; vendor freeze enforced"
+    },
+    "training": {
+      "color": "GREEN",
+      "detail": "Risk Intelligence session complete 2/26; Due Diligence Requests session in progress 3/4-3/5"
+    },
+    "go_no_go_readiness": {
+      "color": "YELLOW",
+      "detail": "Decision gate 3/9; BitSight C2 scope decision required; all other items tracking to resolution"
+    }
+  },
+  "active_issues": [
+    {
+      "id": "ISS-001",
+      "title": "IRQ Scoring — Bias Factor",
+      "status": "RESOLVED",
+      "resolution": "Resolved without customization; configuration changes made (maximize normalized input checkbox + metric weight adjustment)",
+      "resolved_date": "2026-03-04",
+      "impact": "UAT unblocked; functional testing 3/4; UAT with stakeholders targeted 3/5",
+      "owner": "Heidi",
+      "notes": "Bias factor in ServiceNow scoring not documented; Gemini used to identify. No code changes — admin-level config only. Settings documentation required."
+    },
+    {
+      "id": "ISS-002",
+      "title": "BitSight — GRC Issue Generation (Component 2)",
+      "status": "IN PROGRESS — ACTIVE BLOCKER",
+      "detail": "Known ServiceNow bug: only generating issues for operational alerts, not critical ones. Workaround requires slight customization. Enhanced findings-to-alerts logic in development.",
+      "impact": "Component 2 UAT blocked; go-live scope decision required by 3/9",
+      "owner": "Heidi / Vidhya Sagar",
+      "decision_needed_by": "2026-03-09",
+      "notes": "OOTB plugin (Component 1) functional and can enable for UAT. Enhanced findings considered nice-to-have for initial launch. Tony Scott raised brittleness concern re: customization sustainability."
+    },
+    {
+      "id": "ISS-003",
+      "title": "Avetta Integration — Staging Environment Access",
+      "status": "IN PROGRESS — ACTIVE BLOCKER",
+      "detail": "Staging environment not connecting to Avetta due to subrogation instance policy changes. Firewall issue previously resolved by Gary Vick. New server error on Avetta side. Mark engaged for root cause + fix (ETA 24 hours from 3/5).",
+      "impact": "Cannot UAT Avetta integration in staging; production validation in progress",
+      "owner": "Alec Barone / Gary S Vick",
+      "decision_needed_by": "2026-03-06",
+      "notes": "Fourth-party data component introduced during conversion. Gary Vick confirming production status. Subro endpoint exposure needed long-term."
+    },
+    {
+      "id": "ISS-004",
+      "title": "Ariba Integration — Stage Environment Misconfiguration",
+      "status": "IN PROGRESS",
+      "detail": "Stage environment misconfiguration pending Ariba team fix",
+      "impact": "Ariba UAT blocked in staging",
+      "owner": "TBD",
+      "decision_needed_by": "2026-03-06",
+      "notes": ""
+    },
+    {
+      "id": "ISS-005",
+      "title": "Outbound API — VCS Integration Request",
+      "status": "NEW — IN SCOPING",
+      "detail": "Business request (CSG-supported) for outbound read API exposing full TPRM dataset (TPR records, engagements, IRQs, DDQs, attachments, contacts, risks). Architecture North Star is GCP push but read-only API acceptable. Rate limits and pull strategy (daily vs delta) TBD.",
+      "impact": "Scope addition; architecture discussion required",
+      "owner": "Anthony James (Tony) Scott / Arav Sundareswaran",
+      "notes": "Arav confirmed read-only consumption acceptable. Volume, frequency, and pull strategy details needed from business."
+    }
+  ],
+  "key_dates": {
+    "2026-03-05": "IRQ functional testing + stakeholder UAT",
+    "2026-03-06": "Avetta/Ariba blocker resolution target",
+    "2026-03-09": "Go/No-Go gate — BitSight C2 scope decision",
+    "2026-03-12": "Final UAT completion target",
+    "2026-03-13": "Go-Live target",
+    "2026-03-17": "Transition window close",
+    "2026-03-27": "Hypercare window close"
+  },
+  "stakeholders": {
+    "clark_johnson": {
+      "role": "Delivery Lead / PM",
+      "org": "Deloitte"
+    },
+    "tony_scott": {
+      "role": "Delivery Architect",
+      "org": "Deloitte"
+    },
+    "sudhakar_sivasubramanian": {
+      "role": "VZ Program Lead",
+      "org": "Verizon"
+    },
+    "heidi": {
+      "role": "Functional Lead, TPRM",
+      "org": "Deloitte"
+    },
+    "vidhya_sagar": {
+      "role": "Technical Architect",
+      "org": "Deloitte"
+    },
+    "arav_sundareswaran": {
+      "role": "VZ Architect",
+      "org": "Verizon"
+    },
+    "alec_barone": {
+      "role": "Developer",
+      "org": "Deloitte"
+    },
+    "gary_vick": {
+      "role": "Integrations Lead",
+      "org": "Deloitte/VZ"
+    },
+    "merlyn": {
+      "role": "Program Sponsor",
+      "org": "CSG / Verizon"
+    },
+    "lauren": {
+      "role": "ERM UAT Lead",
+      "org": "Verizon"
+    },
+    "jennifer": {
+      "role": "VCS UAT Lead",
+      "org": "Verizon"
+    }
+  }
+}
