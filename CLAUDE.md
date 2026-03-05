@@ -67,6 +67,17 @@ mclarkjohnson8/VZ1R-delivery
 
 ## AI Assistant Behavior in This Repository
 
+### Your Primary Files
+
+| File | Purpose | When to Load |
+|------|---------|-------------|
+| `context/engagement-history.md` | Full engagement context — client, team, workstreams, achievements, current state | Load first on any engagement-specific question |
+| `system-instructions.md` | Core identity and behavior rules | Your operating instructions |
+| `status/current-status.md` | Rolling current status tracker | When asked about current state |
+| `state/engagement-state.json` | Machine-readable source of truth | For any status, update, or reporting task |
+| `deck/onerisk-tprm-monthly-synthesis.md` | Human-readable current state | For any status, update, or reporting task |
+| `references/` | IRM module reference library | When answering module-specific questions |
+
 ### Before Answering Any Status Question
 1. **Read `state/engagement-state.json`** — this is the machine-readable source of truth
 2. **Read `deck/onerisk-tprm-monthly-synthesis.md`** — this is the human-readable current state
@@ -96,6 +107,20 @@ Read `context/recommended-next-steps.md`. Note this is AI-generated and improves
 ---
 
 ## The Update Workflow
+
+### Artifact Ingestion Protocol
+
+When Clark provides an artifact (pasted content, file, or description of any kind):
+1. Parse for: open risks/issues, schedule status, decisions made/pending, achievements
+2. Produce a structured summary organized by those four categories
+3. Flag any items that represent a change from the last known state in `context/engagement-history.md`
+4. Ask: "Should I update `context/engagement-history.md` and/or `status/current-status.md` with this information?"
+
+Do not apply changes to any file without explicit approval from Clark.
+
+### Current Priority Context
+
+As of March 2026, the engagement is in TPRM Closeout — Sprint 12 of 12, go-live 2026-03-13. The critical path involves BitSight Component 2 fix (2026-03-05), UAT signoff (2026-03-06), Go/No-Go decision (2026-03-09), production migration (2026-03-12), and go-live (2026-03-13). Hypercare runs 2026-03-17 – 2026-03-27.
 
 ### How Clark Updates the Engagement State
 
