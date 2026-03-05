@@ -1,136 +1,206 @@
-# ServiceNow IRM: Entity Framework Reference
-## Verizon OneRisk TPRM | Deloitte | ServiceNow IRM (Zurich)
+# Entity Framework Reference
+
+## Table of Contents
+1. Entity Framework Overview
+2. Entity Hierarchy Design
+3. Entity Classes
+4. Entity Tiers
+5. Entity Profile Configuration
+6. Common Design Decisions & Anti-Patterns
+7. Scoping Guidance
 
 ---
 
-## Overview
+## 1. Entity Framework Overview
 
-The Entity Framework is the foundation of every ServiceNow IRM implementation. Every module — Risk, Compliance, Audit, TPRM, BCM — operates against entities. This document describes the entity framework architecture, configuration standards, and Verizon-specific implementation.
+The Entity Framework is the structural backbone of all ServiceNow IRM modules. Every risk, control,
+policy, audit engagement, vendor relationship, and issue ultimately attaches to an entity. Poor entity
+design at the outset is the single most common root cause of IRM implementation rework.
+
+Entity Framework components:
+- **Entity:** A business unit, legal entity, vendor, application, product, location, or other
+  organizational construct that is subject to risk and compliance activities
+- **Entity Class:** The category/type of entity (e.g., Business Unit, Legal Entity, Vendor, Application)
+- **Entity Tier:** The risk-based classification that drives assessment frequency, control depth,
+  and profile completeness requirements
+- **Entity Hierarchy:** The parent-child relationship structure that enables rollup reporting,
+  inherited controls, and scoped assessments
+- **Entity Profile:** The set of attributes, relationships, and metadata associated with a specific entity
 
 ---
 
-## What Is an Entity?
+## 2. Entity Hierarchy Design
 
-An **entity** is any organizational unit, technology asset, vendor, or business subject that can own, create, or be associated with a risk, control, compliance obligation, or third-party relationship.
+### Design Principles
+- Hierarchy should reflect the organization's risk reporting structure, not its org chart
+- Maximum recommended depth: 5 levels (deeper hierarchies create reporting complexity)
+- Every entity must have exactly one parent (except root-level entities)
+- Hierarchy changes post-launch require re-scoping of active assessments and risk registers — treat as a change request
 
-**Examples:**
-- Verizon Business Unit (Entity Type: Business Unit)
-- SAP ERP (Entity Type: Technology Asset / Application)
-- Accenture (Entity Type: Vendor)
-- Verizon Consumer Group (CSG) (Entity Type: Legal Entity)
-- Avetta (Entity Type: Vendor — also a Fourth-Party provider)
-
----
-
-## Entity Hierarchy
-
+### Typical Enterprise Hierarchy Pattern
 ```
-Enterprise (Root)
-└── Legal Entity / Division
-    └── Business Unit / Department
-        ├── Business Process
-        ├── Technology Asset (Application / Infrastructure)
-        └── Vendor / Third Party
-            └── Fourth-Party (Sub-vendor)
-```
-
-For Verizon OneRisk:
-```
-Verizon Communications Inc. (Root)
-├── Verizon Consumer Group (CSG)
-│   ├── VCS (Vendor & Contracting Services)
-│   └── ERM (Enterprise Risk Management)
-└── [Other Business Units]
-    └── Vendors (TPRM scope)
-        ├── BitSight (Data Provider)
-        ├── Avetta (Contractor Management / Fourth-Party)
-        ├── Ariba (Procurement / Contracting Data)
-        └── [Additional Vendors]
+Level 1: Enterprise (root)
+Level 2: Business Domain / Division
+Level 3: Business Unit / Legal Entity
+Level 4: Department / Function
+Level 5: Process / Application / Location
 ```
 
----
+### Telecom Pattern Example
+```
+Enterprise
+├── Consumer
+│   ├── Mobility
+│   ├── Home Internet
+│   └── Device Sales
+├── Enterprise/B2B
+│   ├── Managed Services
+│   └── Network Solutions
+├── Technology & Infrastructure
+│   ├── Network Operations
+│   └── IT / Platforms
+└── Corporate Functions
+    ├── Legal & Compliance
+    ├── Finance
+    └── HR
+```
 
-## Entity Types (Verizon Configuration)
-
-| Entity Type | Description | Module Usage |
-|-------------|-------------|-------------|
-| **Enterprise** | Root organization | All modules |
-| **Legal Entity** | Incorporated business unit | Risk, Compliance |
-| **Business Unit** | Operational division (CSG, ERM, VCS) | All modules |
-| **Business Process** | Key operational processes | BCM (BIA), Risk |
-| **Application** | Technology systems | Risk, Compliance, BCM |
-| **Infrastructure** | Network, servers, cloud assets | Risk, BCM |
-| **Vendor** | Third-party organization | TPRM (primary) |
-| **Fourth Party** | Sub-vendors / sub-processors | TPRM |
-| **Data Asset** | Classified data sets | Compliance, Privacy |
-
----
-
-## Entity Framework Rules
-
-### Rule 1: Always First
-Entity framework design is always completed before any module configuration. You cannot configure TPRM assessments, risk registers, or controls without knowing what entities own them.
-
-### Rule 2: Hierarchy Integrity
-- Every entity must have a parent (except the root)
-- Circular references are not permitted
-- Deletion of entities with active records requires archival, not hard delete
-
-### Rule 3: Ownership
-- Every entity must have a designated owner (user or group)
-- Owner is responsible for risk acceptance, control attestation, and assessment responses
-- Owner changes trigger notification and re-scoping review
-
-### Rule 4: Scoping Consistency
-- Module scoping rules (which records apply to which entities) must be consistent
-- If a vendor is in scope for TPRM, they must be an entity in the entity framework
-- New vendor onboarding always starts with entity creation
+### ⚠️ Risk: Hierarchy Lock-In
+Entity hierarchy restructuring mid-implementation is high-effort. Facilitate a dedicated workshop
+with the client's risk and compliance leadership before finalizing. Get sign-off documented.
 
 ---
 
-## Verizon Entity Framework Status
+## 3. Entity Classes
 
-| Status | Detail |
-|--------|--------|
-| **Framework State** | Completed and validated |
-| **Completion Date** | Imagine phase (before Sprint 1) |
-| **Vendors in Scope** | [Actual count from engagement data] |
-| **Entity Types Deployed** | Enterprise, Legal Entity, Business Unit, Vendor, Fourth-Party |
-| **Integration** | BitSight entity scores linked to Vendor entity records |
+Entity classes define the type/category of entity and drive which profile attributes, assessment
+templates, and module behaviors apply.
 
-**Key Note**: The entity framework is stable. Any proposed change to scope (new vendor, new department) must go through change control and entity framework impact assessment.
+### Standard Entity Classes (OOB + Common Custom)
 
----
+| Class | Description | Typical Modules |
+|-------|-------------|-----------------|
+| Business Unit | Internal organizational unit | Risk, PCM, Audit |
+| Legal Entity | Registered corporate entity | Risk, PCM, Privacy |
+| Vendor / Third Party | External supplier or partner | TPRM, Risk |
+| Application / System | IT application or platform | Risk, PCM, BCM |
+| Location / Facility | Physical site or data center | BCM, Risk |
+| Product / Service | Client-facing or internal product | Risk, Privacy |
+| Process | Business or IT process | Risk, PCM, BCM |
+| Project | Temporary initiative | Risk |
 
-## Entity-Linked Record Types
-
-When an entity is created, the following records can be linked to it:
-
-| Record Type | Module | Description |
-|-------------|--------|-------------|
-| Third-Party Profile | TPRM | Vendor profile, tier, risk rating |
-| Engagement | TPRM | Assessment engagement (IRQ, DDQ) |
-| Risk | Risk | Risk record attributed to entity |
-| Control | Compliance | Control owned by entity |
-| Audit Subject | Audit | Entity included in audit scope |
-| BIA | BCM | Business Impact Analysis for entity |
-| Issue | All | Active issue attributed to entity |
+### Configuration Notes
+- Entity classes are configured in the Entity Class table (`[sn_grc_entity_class]`)
+- Each class can have a distinct set of profile attributes (via related lists and custom fields)
+- Avoid over-proliferating classes — consolidate where profile structures are >80% identical
+- Class assignment drives scoped list filtering across all IRM modules
 
 ---
 
-## Configuration Standards
+## 4. Entity Tiers
 
-### Naming Conventions
-- Entity names: Official legal/operating name (no abbreviations unless standard)
-- Entity codes: [Type prefix]-[Sequential number] (e.g., VND-0042 for a vendor)
-- Entity groups: Defined by business function, not org chart (org charts change; functions are stable)
+Entity tiers provide risk-based stratification that governs assessment frequency, control depth,
+and resource allocation.
 
-### Scoped Application
-All entity framework customizations (custom types, custom fields) must be in the IRM scoped application — never global.
+### Standard Tiering Model (Recommended)
 
-### Change Control
-Entity type changes require ARB review. Entity instance changes (adding/modifying a vendor record) are managed by the TPRM manager role.
+| Tier | Label | Definition | Assessment Frequency | Profile Completeness |
+|------|-------|------------|---------------------|----------------------|
+| 1 | Critical | Highest inherent risk; regulatory exposure; systemic impact | Quarterly or continuous | Full profile required at go-live |
+| 2 | High | Significant risk; material compliance obligations | Semi-annually | Full profile required |
+| 3 | Medium | Moderate risk; standard compliance requirements | Annually | Core profile required |
+| 4 | Low | Minimal risk; limited compliance scope | Bi-annually or on-change | Minimal profile |
+
+### Tiering Criteria (Customize per Client)
+- Revenue / operational dependency
+- Data sensitivity (PII, PHI, financial)
+- Regulatory obligation (SOX, HIPAA, PCI, state privacy laws)
+- Third-party access to systems/data
+- Single point of failure / business continuity exposure
+- Geographic/jurisdictional risk
+
+### ⚠️ Risk: Tier Inflation
+Clients often want everything at Tier 1. Enforce tiering criteria rigorously — tier inflation collapses
+assessment prioritization and creates capacity problems for risk/compliance teams post-go-live.
 
 ---
 
-*Reference document. Entity framework is the foundation layer — validate it first for any new scope. Escalate entity framework changes to Tony Scott / Vidhya Sagar.*
+## 5. Entity Profile Configuration
+
+### Profile Attributes to Configure per Class
+
+**Core Attributes (All Classes):**
+- Entity Name, Description, Owner, Delegate Owner
+- Entity Class, Entity Tier, Parent Entity
+- Status (Active/Inactive), Effective Date
+- Primary Contact, Secondary Contact
+
+**Extended Attributes by Class:**
+
+*Business Unit / Legal Entity:*
+- Geographic Location(s), Jurisdiction
+- Revenue Band, Headcount Band
+- Regulatory Obligations (multi-select)
+- Business Domain
+
+*Vendor / Third Party:*
+- Vendor Type, Service Category
+- Engagement Start/End Date
+- Data Access Level, System Access Level
+- Primary Contract Reference
+- Inherent Risk Score (pre-assessment)
+
+*Application / System:*
+- Hosting Type (Cloud/On-Prem/Hybrid)
+- Data Classification
+- Criticality Rating
+- Business Owner, Technical Owner
+- Upstream/Downstream Dependencies
+
+### Relationship Configuration
+- Entity-to-Policy: scopes policy applicability
+- Entity-to-Risk: scopes risk ownership and rollup
+- Entity-to-Control: enables control inheritance and scoped attestation
+- Entity-to-Vendor: enables TPRM scoping and continuous monitoring
+
+---
+
+## 6. Common Design Decisions & Anti-Patterns
+
+### Decision: Flat vs. Deep Hierarchy
+- **Flat (2-3 levels):** Simpler to maintain; less granular reporting; preferred for smaller programs
+- **Deep (4-5 levels):** Enables granular scoping and rollup; requires more governance overhead
+- **Recommendation:** Default to 3-4 levels; add depth only where risk differentiation demands it
+
+### Anti-Pattern: Using Org Chart as Entity Hierarchy
+The org chart changes frequently (reorgs, M&A, restructuring). The IRM entity hierarchy should reflect
+risk accountability structure, which is more stable. Map the two separately and document the relationship.
+
+### Anti-Pattern: Creating Entity Classes for Every Nuance
+Five distinct vendor classes that all have the same profile and the same assessment templates is waste.
+Use custom attributes on a single Vendor class to capture nuance.
+
+### Anti-Pattern: Deferring Entity Tiering to Post-Go-Live
+Without tiering, assessment scheduling defaults to "everything at the same frequency," which is
+operationally unsustainable. Tier at least Tier 1/2 entities before go-live.
+
+---
+
+## 7. Scoping Guidance
+
+### Minimum Viable Entity Scope for Phase 1 Go-Live
+- Tier 1 and Tier 2 entities fully profiled
+- Entity hierarchy finalized through Level 3 minimum
+- All entity classes defined and configured
+- Entity-to-module relationships scoped (which entities are in scope for which modules)
+- Tier 3/4 entities: names and classes loaded; full profiling deferred to Phase 2
+
+### Workshop Agenda: Entity Framework Design Session
+1. Review current org/risk structure (30 min)
+2. Define entity classes and reach consensus (30 min)
+3. Draft entity hierarchy — top 3 levels (45 min)
+4. Define tiering criteria and apply to known entities (45 min)
+5. Validate cross-module scoping implications (30 min)
+6. Document decisions, open items, and owners (15 min)
+
+*Total: ~3 hours; recommend splitting across two sessions for large enterprises*

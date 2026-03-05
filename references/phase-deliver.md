@@ -1,162 +1,422 @@
-# ServiceNow IRM: Deliver Phase Reference
-## Verizon OneRisk TPRM | Deloitte | ServiceNow IRM (Zurich)
+# Deliver Phase Artifacts Reference
+
+## Table of Contents
+1. Phase Overview
+2. Sprint Capacity Calculator
+3. Sprint Planning Artifacts
+4. Sprint Tracker
+5. Configuration Build Spec Template
+6. UAT Plan
+7. UAT Test Script Template
+8. Defect Tracker
+9. Go-Live Readiness Checklist
+10. Cutover Plan Template
+11. Weekly Status Report Template
 
 ---
 
-## Overview
+## 1. Phase Overview
 
-The Deliver phase covers the Build → Test → Close lifecycle of a ServiceNow IRM implementation. This document provides the configuration standards, sprint execution model, UAT framework, and release management approach used on the Verizon OneRisk engagement.
+**Deliver** encompasses Build (sprint execution), Test (UAT), and Close (go-live + release).
 
----
-
-## Deliver Phase Objectives
-
-1. Configure all in-scope modules to approved FDD/TDD specifications
-2. Validate configuration through unit testing, system testing, and UAT
-3. Complete data migration and validate data integrity
-4. Obtain client go-live sign-off
-5. Execute cutover and go-live
-
----
-
-## Sprint Execution Model
-
-### Sprint Structure (10 business days)
-
-| Day | Activities |
-|-----|-----------|
-| Day 1 | Sprint Planning — confirm DoR; review capacity; assign stories; team commits |
-| Day 1–9 | Development, configuration, unit testing, daily standups |
-| Day 8–9 | Sprint Review/Demo preparation; defect triage |
-| Day 10 | Sprint Review/Demo (stakeholder demo; DoD consensus); Sprint Retrospective |
-
-### Sprint Metrics
-
-| Metric | Calculation | Target |
-|--------|-------------|--------|
-| Velocity | Story points completed / sprint | Rolling 2-sprint average |
-| Defect Density | Defects found in sprint / stories completed | Decreasing trend |
-| Blocker Resolution | Avg days to resolve blockers | <2 days |
-| UAT Acceptance Rate | UAT scripts passed / total | >95% at go-live |
+Exit criteria before transitioning to Run:
+- [ ] All sprint stories at Definition of Done
+- [ ] UAT executed and signed off by client
+- [ ] All P1/P2 defects resolved; P3/P4 disposition documented
+- [ ] Go-Live Readiness Assessment passed
+- [ ] Cutover plan executed
+- [ ] Training completed for all user groups
+- [ ] PROD environment validated post-cutover
+- [ ] Hypercare team and process confirmed
 
 ---
 
-## Definition of Ready (DoR) Checklist
+## 2. Sprint Capacity Calculator
 
-Before a story enters a sprint:
-- [ ] User story written in "As a [role], I want [action], so that [outcome]" format
-- [ ] Acceptance criteria defined (measurable, testable)
-- [ ] Dependencies identified and cleared
-- [ ] Configuration environment available (DEV ready)
-- [ ] Test data identified or available
-- [ ] Team capacity confirmed to complete in sprint
-- [ ] Integration dependencies documented
+### Inputs
 
----
+| Input | Description | Default |
+|-------|-------------|---------|
+| Sprint Duration | Working days | 10 |
+| Team Members | Count by role | Variable |
+| Meeting Overhead | % of time in ceremonies | 15% |
+| Buffer | % for unplanned work, admin | 10% |
+| PTO / Holidays | Days off per member | Per sprint |
 
-## Definition of Done (DoD) Checklist
-
-Before a story is marked complete:
-- [ ] Configured in DEV per FDD/TDD
-- [ ] Unit tested by developer
-- [ ] Peer reviewed (configuration review)
-- [ ] Demo-ready with test data
-- [ ] Documented (inline configuration notes + change log entry)
-- [ ] Update Set created and named per convention
-- [ ] DoD consensus from delivery team
-
----
-
-## Configuration Promotion Path
-
+### Capacity Formula per Team Member
 ```
-DEV → TEST/UAT → PROD (Pre-Go-Live)
+Available Hours = (Sprint Days - PTO/Holiday Days) × Daily Hours
+Net Capacity = Available Hours × (1 - Meeting Overhead % - Buffer %)
+Story Points = Net Capacity ÷ Hours-per-Point
 ```
 
-**Rules:**
-- No manual changes in TEST or PROD outside of the Update Set process
-- Each Update Set corresponds to one story or change
-- TEST must be at same plugin/patch level as PROD
-- Regression testing required after each TEST promotion
-- PROD promotion only after UAT sign-off
+### Sprint Capacity Table Template
+
+| Team Member | Role | Sprint Days Available | PTO/Holiday Days | Available Days | Hours/Day | Available Hours | Overhead (15%) | Buffer (10%) | Net Hours | Est. Story Points |
+|------------|------|----------------------|-----------------|----------------|-----------|-----------------|----------------|--------------|-----------|-------------------|
+| | SA | | | | 8 | | | | | |
+| | Dev | | | | 8 | | | | | |
+| | Dev | | | | 8 | | | | | |
+| | QA | | | | 8 | | | | | |
+| | PM | | | | 8 | | | | | |
+| **Total** | | | | | | | | | | |
+
+### Velocity Guidance
+- Sprint 1: Use capacity-based estimate only; no velocity baseline yet
+- Sprint 2: Establish baseline from Sprint 1 actuals
+- Sprint 3+: Use rolling 2-sprint average for planning; flag if variance >20%
+- ⚠️ Risk: Committing to velocity targets before Sprint 2 actuals are known leads to overcommitment
 
 ---
 
-## Update Set Naming Convention
+## 3. Sprint Planning Artifacts
 
-```
-[SPRINT]-[STORY-ID]-[Short Description]
-Format: S12-VZ-0042-BitSight-C2-Issue-Generation-Fix
-```
+### Sprint Planning Agenda (2-Hour Session)
 
----
+1. Confirm DoR — verify all committed stories meet Definition of Ready (15 min)
+2. Capacity review — confirm team availability, PTO, holidays (15 min)
+3. Backlog review — Prioritization Committee has pre-ranked epics; confirm story priorities with Product Owner (15 min)
+4. Story breakdown — decompose stories to task level; assign owners (60 min)
+5. Team commitment — team confirms sprint scope based on capacity and DoR (10 min)
+6. Dependency and blocker check — surface cross-team dependencies (5 min)
 
-## UAT Framework
+### Definition of Ready (DoR) — Story Enters Sprint When:
+- [ ] User story scope defined and estimated (story points assigned)
+- [ ] Acceptance criteria written, reviewed, and agreed
+- [ ] Dependencies identified and cleared or risk-accepted with documented mitigation
+- [ ] Test steps drafted
+- [ ] Team capacity confirmed for the sprint
+- [ ] Design spec / build spec available or confirmed to be ready before development begins
 
-### UAT Phases (Verizon OneRisk)
+### Sprint Backlog Schema
 
-| Phase | Scope | Lead | Target Date |
-|-------|-------|------|-------------|
-| IRQ UAT | IRQ scoring, workflow, portal | Heidi + VZ stakeholders | 2026-03-05 |
-| BitSight C1 UAT | Score intake, alerts dashboard | Heidi | Underway |
-| BitSight C2 UAT | Issue generation from alerts | Heidi / Vidhya | Pending C2 fix |
-| Avetta UAT | Integration, data display | Alec / Gary | Pending staging fix |
-| Ariba UAT | Contract data ingestion | TBD | Pending stage fix |
-| Full Regression UAT | End-to-end workflow | Lauren (ERM), Jennifer (VCS) | 2026-03-12 |
+| Story ID | Epic | User Story | Module | Acceptance Criteria | Story Points | Assignee | Sprint | Status | DoR Met | Dependencies | Notes |
+|----------|------|-----------|--------|--------------------|-----------  |----------|--------|--------|---------|--------------|-------|
 
-### UAT Defect Severity
+### Story Point Reference (IRM Context)
 
-| Severity | Definition | Go-Live Impact |
-|----------|-----------|----------------|
-| **Critical** | Core functionality broken; no workaround | Blocks go-live |
-| **High** | Major workflow broken; workaround exists but unacceptable | Blocks go-live |
-| **Medium** | Partial functionality impaired; workaround exists | Does not block; track for Sprint 1 hypercare |
-| **Low** | Minor UI/cosmetic issue | Does not block |
+| Points | Effort Level | IRM Example |
+|--------|-------------|-------------|
+| 1 | Trivial | Update a field label; add a choice list value |
+| 2 | Small | Configure a single UI policy; create a simple notification |
+| 3 | Medium-Small | Configure a catalog item; build a simple workflow |
+| 5 | Medium | Full control attestation workflow; risk scoring configuration |
+| 8 | Large | Full module scoped setup; complex integration business rule |
+| 13 | X-Large | Break down — story is too large; decompose before sprint |
 
-### UAT Sign-Off Authority
-- ERM workflows: **Lauren** (client UAT lead)
-- VCS workflows: **Jennifer** (client UAT lead)
-- Technical integrations: **Vidhya Sagar** + **Arav Sundareswaran**
-- Program sign-off: **Tony Scott** (go/no-go authority)
-
----
-
-## Cutover Plan (Go-Live 2026-03-13)
-
-### Pre-Cutover Checklist (by 2026-03-12)
-- [ ] All UAT sign-offs received
-- [ ] Data migration validated in PROD-parallel environment
-- [ ] Integration endpoints switched to PROD
-- [ ] Vendor freeze confirmed (no changes to legacy system)
-- [ ] Support team briefed and on standby
-- [ ] Rollback plan documented and rehearsed
-- [ ] Go/No-Go gate cleared (2026-03-09)
-
-### Cutover Window
-- **Start**: End of business 2026-03-12 (or early morning 2026-03-13)
-- **Completion target**: Business open 2026-03-13
-- **Blackout period**: Legacy Vendor Risk system locked from 3/12 EOD
-
-### Post-Cutover Validation (Day 1)
-- [ ] Login and access validation for all user groups
-- [ ] Integration smoke tests (BitSight C1, Avetta, Ariba)
-- [ ] Sample record creation and workflow completion
-- [ ] Notification delivery validation
-- [ ] Performance baseline check
+### Definition of Done (DoD) — IRM Configuration Story is Done When:
+- [ ] Configured in DEV per design/build spec
+- [ ] Unit tested by developer (positive and negative scenarios)
+- [ ] Peer reviewed by another team member
+- [ ] Demo-ready without additional setup
+- [ ] Documented in configuration workbook / build notes
+- [ ] Stakeholder consensus in sprint review that DoD is met
 
 ---
 
-## Release Management
+## 4. Sprint Tracker
 
-### Version Control
-- ServiceNow: Update Sets (tracked in ServiceNow + project SharePoint)
-- Configuration: documented in TDD (updated each sprint)
-- Integration configs: version-controlled in this repository
+### Sprint Tracker Schema
 
-### Rollback Procedure
-- Pre-go-live rollback: restore to previous Update Set state in PROD
-- Post-go-live: activate legacy system as fallback (vendor freeze must be reversible for 30 days)
+| Story ID | Title | Assignee | Points | Status | Start Date | End Date | Actual Hours | Blockers | Notes |
+|----------|-------|----------|--------|--------|------------|----------|--------------|----------|-------|
+
+### Status Values
+- **Not Started** — In backlog, meets DoR, not yet in progress
+- **In Progress** — Active development/configuration
+- **In Review** — Peer review or PM review pending
+- **Blocked** — Cannot progress; blocker documented with date raised
+- **Done** — Meets all DoD criteria; confirmed in sprint review
+
+### Sprint Retrospective — Like / Learn / Lack / Long For Format
+
+| Category | Question | Examples |
+|----------|----------|---------|
+| **Like** | What worked well and should continue? | Effective standups, clear design specs, good client engagement |
+| **Learn** | What did we learn — about process, platform, or client? | UCF mapping complexity, entity scoping insight |
+| **Lack** | What was missing that hurt delivery? | Late design decisions, incomplete test data, unclear acceptance criteria |
+| **Long For** | What do we wish we had? | Earlier client SME access, automated test scripts, integrated environments |
+
+Action items from retro are owned by named individuals and tracked in RAID log.
+
+### Sprint Health Indicators
+- **On Track:** Burndown trending to zero; no P1 blockers
+- **At Risk:** Burndown behind by >20%; blocker unresolved >2 days
+- **Off Track:** Committed stories will not complete; escalation required
 
 ---
 
-*Reference document. Deliver phase is active — Sprint 12 of 12. Go-live target: 2026-03-13.*
+## 5. System Integration Testing (SIT)
+
+SIT is a distinct phase between sprint execution and UAT. It validates that all modules work together
+correctly end-to-end and that integrations function as designed. SIT is owned by the Deloitte delivery
+team; UAT is owned by the client.
+
+### SIT Scope
+- Cross-module workflow validation (e.g., Risk → Issue auto-creation; Audit Finding → Issue)
+- Integration endpoint testing (any system integrations configured during Deliver)
+- Data flow validation (entity relationships, rollup reporting, scoped list filtering)
+- Notification and workflow trigger validation across all modules
+- Performance validation on key pages and scheduled jobs
+
+### SIT Entry Criteria
+- [ ] All sprint stories at DoD
+- [ ] TEST environment refreshed from DEV
+- [ ] Integration test cases written and reviewed
+- [ ] Test data loaded
+
+### SIT Exit Criteria
+- [ ] All integration scenarios pass
+- [ ] No P1/P2 defects open
+- [ ] Cross-module workflows validated end-to-end
+- [ ] Deloitte tech lead sign-off
+- [ ] UAT environment prepared from SIT-validated build
+
+### ⚠️ Risk: Skipping SIT and Going Straight to UAT
+Clients often want to compress timelines by merging SIT and UAT. This is a false economy — integration
+failures discovered during UAT by business users are higher-cost to remediate and damage client confidence.
+Hold the SIT gate.
+
+---
+
+## 5. Configuration Build Spec Template
+
+### Purpose
+Documents the exact configuration to be built for each sprint story, serving as the
+developer's instruction set and the QA baseline.
+
+### Build Spec Structure
+
+**Header:**
+- Story ID, Title, Module, Sprint, Author, Date, Reviewer
+
+**Business Context:**
+- Why this is being built; what business problem it solves
+
+**Configuration Details:**
+- Table / Form / Workflow being modified
+- Field-by-field specification (name, type, default value, mandatory, visible, read-only)
+- Business rule logic (written in plain English + pseudocode)
+- UI Policy conditions and actions
+- Workflow stages, transitions, and notifications
+
+**Integration Points:**
+- Upstream data sources (what feeds this)
+- Downstream consumers (what this feeds)
+- Cross-module dependencies
+
+**Test Criteria:**
+- Positive test: Expected behavior when used correctly
+- Negative test: Expected behavior when misused or edge case
+- Data setup required for testing
+
+**Sign-Off:**
+- Developer confirms build complete
+- Reviewer confirms peer review complete
+
+---
+
+## 6. UAT Plan
+
+### Required Sections
+
+1. **Purpose & Scope** — What is being tested; what is explicitly out of scope
+2. **UAT Approach** — Scenario-based testing; who executes; tools used (ServiceNow, Excel tracker)
+3. **Entry Criteria** — What must be true before UAT begins
+4. **Exit Criteria** — What must be true before UAT is declared complete
+5. **Test Environment** — Instance, data set, access provisioning
+6. **Roles & Responsibilities**
+
+   | Role | Responsibility |
+   |------|---------------|
+   | UAT Coordinator (Consultant) | Test plan, script management, defect triage |
+   | Business Tester (Client) | Script execution, defect logging |
+   | Tech Lead (Consultant) | Defect resolution |
+   | UAT Sign-Off Authority (Client) | Final approval |
+
+7. **Test Scenarios** — Mapped to modules and user roles
+8. **Defect Management Process** — Severity definitions, triage cadence, resolution SLAs
+9. **UAT Schedule** — Dates for execution windows, defect fix sprints, re-test, sign-off
+10. **Sign-Off Document Reference** — Who signs and what they are approving
+
+### UAT Entry Criteria
+- [ ] All sprint stories at Definition of Done
+- [ ] TEST environment refreshed from DEV
+- [ ] Test data loaded and validated
+- [ ] UAT test scripts reviewed and approved by client
+- [ ] All testers provisioned with correct roles/access
+- [ ] Defect tracker established and shared
+
+### UAT Exit Criteria
+- [ ] All P1 defects resolved and re-tested
+- [ ] All P2 defects resolved or formally deferred with sponsor approval
+- [ ] P3/P4 defect disposition documented
+- [ ] Client UAT sign-off obtained in writing
+- [ ] No open design questions
+
+---
+
+## 7. UAT Test Script Template
+
+### Script Header
+- Script ID, Module, Test Scenario, Author, Date, Tester, Execution Date
+
+### Script Body
+
+| Step | Action | Test Data | Expected Result | Actual Result | Pass/Fail | Defect ID | Notes |
+|------|--------|-----------|-----------------|---------------|-----------|-----------|-------|
+| 1 | Navigate to... | | | | | | |
+| 2 | Click / Enter... | | | | | | |
+
+### Scenario Coverage by Module
+
+**Policy & Compliance:**
+- Create and publish a policy
+- Map controls to policy statements
+- Initiate and complete a control attestation
+- Escalate failed attestation to issue
+
+**Risk Management:**
+- Create a risk definition and scoped risk
+- Complete a risk assessment (likelihood + impact scoring)
+- Create a risk response / treatment plan
+- Trigger issue creation from risk threshold breach
+
+**Audit Management:**
+- Create and schedule an audit engagement
+- Assign audit tasks to auditors
+- Create and resolve an audit finding
+- Generate finding → issue integration
+
+**Issues & Remediation:**
+- Create an issue manually
+- Assign remediation task with due date
+- Update progress and close the issue
+- Escalate overdue issue
+
+**TPRM:**
+- Onboard a new vendor (entity creation)
+- Launch vendor risk assessment
+- Review assessment results and score
+- Create vendor risk issue
+
+**Entity Framework:**
+- Create entity with correct class, tier, parent
+- Update entity profile attributes
+- Validate entity appears correctly in module scoped lists
+
+---
+
+## 8. Defect Tracker
+
+### Defect Schema
+
+| Defect ID | Title | Module | Severity | Priority | Status | Steps to Reproduce | Expected | Actual | Assignee | Date Logged | Target Fix Date | Date Resolved | Regression Tested |
+|-----------|-------|--------|----------|----------|--------|-------------------|----------|--------|----------|-------------|-----------------|---------------|-------------------|
+
+### Severity Definitions
+
+| Severity | Definition | Resolution SLA |
+|----------|------------|----------------|
+| P1 — Critical | System unusable; data loss risk; security issue; blocks core workflow | 24 hours |
+| P2 — High | Core functionality broken; workaround exists but unacceptable for go-live | 48-72 hours |
+| P3 — Medium | Non-critical functionality impaired; workaround exists; acceptable for go-live with waiver | Next sprint |
+| P4 — Low | Cosmetic issue; minor UX problem; no functional impact | Post go-live backlog |
+
+### Defect Triage Cadence
+- Daily defect triage during active UAT (15-30 min)
+- P1/P2 defects: immediate escalation to tech lead; same-day acknowledgment
+- P3/P4 defects: batch reviewed at daily triage
+- ⚠️ Risk: Allowing P3 defects to accumulate without disposition creates go-live ambiguity
+
+---
+
+## 9. Go-Live Readiness Checklist
+
+### Technical Readiness
+- [ ] All UAT exit criteria met and sign-off obtained
+- [ ] PROD environment provisioned and validated
+- [ ] Cutover plan reviewed and approved
+- [ ] Rollback plan documented and tested
+- [ ] All user accounts and roles provisioned in PROD
+- [ ] Integrations tested end-to-end in TEST; cutover approach for PROD confirmed
+- [ ] Performance/load testing completed (if applicable)
+- [ ] Security review completed (if required)
+
+### Operational Readiness
+- [ ] Training delivered to all user groups
+- [ ] Training materials published to accessible location
+- [ ] Support model documented (hypercare contacts, escalation path, ticketing process)
+- [ ] Runbook published and distributed to support team
+- [ ] SLAs and KPIs defined for hypercare period
+
+### Business Readiness
+- [ ] Executive sponsor confirms go-live authorization
+- [ ] All in-scope business process owners briefed on go-live date and changes
+- [ ] Communications sent to end users
+- [ ] Hypercare support schedule communicated
+
+### Go/No-Go Decision Meeting Agenda
+1. Review readiness checklist status (15 min)
+2. Open defect disposition — confirm P1/P2 resolved (10 min)
+3. Cutover plan walkthrough (15 min)
+4. Risk review — any last-minute concerns (10 min)
+5. Formal go/no-go decision by executive sponsor (10 min)
+
+---
+
+## 10. Cutover Plan Template
+
+### Sections
+1. **Cutover Overview** — Date, time window, objectives, go-live definition
+2. **Pre-Cutover Activities** — Steps to complete before cutover window opens
+3. **Cutover Runbook** — Step-by-step execution with owner, time estimate, and validation step for each action
+4. **Validation Checklist** — Post-cutover checks to confirm PROD is functioning correctly
+5. **Rollback Triggers** — Conditions that would initiate rollback
+6. **Rollback Procedure** — Step-by-step rollback with owner assignments
+7. **Communication Plan** — Who is notified at each stage; go/no-go announcement template
+
+### Cutover Runbook Schema
+
+| Step | Activity | Owner | Start Time | Duration | Validation | Status |
+|------|----------|-------|------------|----------|------------|--------|
+
+---
+
+## 11. Weekly Status Report Template
+
+### Header
+- Project Name, Reporting Period, Report Date, Prepared By, Distribution
+
+### Sections
+
+**1. Executive Summary** (3-5 sentences)
+Overall project health, key accomplishments this week, and top priority for next week.
+
+**2. Project Health Dashboard**
+
+| Dimension | Status | Trend | Notes |
+|-----------|--------|-------|-------|
+| Schedule | 🟢 Green / 🟡 Yellow / 🔴 Red | ↑ ↔ ↓ | |
+| Budget | | | |
+| Scope | | | |
+| Quality | | | |
+| Resources | | | |
+| Risks | | | |
+
+**3. Accomplishments This Week**
+Bullet list of completed milestones, delivered artifacts, and closed items.
+
+**4. Planned for Next Week**
+Bullet list of sprint commitments, milestones, and key activities.
+
+**5. Key Risks & Issues**
+Top 3-5 active RAID items with status and action.
+
+**6. Decisions Needed**
+Any decisions required from client leadership before next reporting period.
+
+**7. Upcoming Milestones**
+
+| Milestone | Target Date | Status |
+|-----------|------------|--------|

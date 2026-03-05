@@ -1,156 +1,188 @@
 # Deloitte Delivery Model Reference
-## Verizon OneRisk TPRM | Deloitte | ServiceNow IRM (Zurich)
+
+## Table of Contents
+1. Ready / Set / Go — Engagement Launch Approach
+2. Governance Model
+3. PMO Setup & Operating Rhythm
+4. Deloitte Risk Panel
+5. Stakeholder Communication Approach
+6. Engagement Environment Strategy
 
 ---
 
-## Overview
+## 1. Ready / Set / Go — Engagement Launch Approach
 
-Deloitte's ServiceNow IRM delivery methodology follows the **Imagine → Deliver → Run** framework, aligned with PMBOK and Agile principles. This document describes the Deloitte-specific delivery standards, governance model, and quality checkpoints applied to the Verizon OneRisk engagement.
+Deloitte's standard engagement launch model. The goal is to "hit the ground running" — PMO stood up,
+governance model established, and stakeholders engaged on Day 1.
 
----
+### READY — Pre-Kickoff (Deloitte-led preparation)
+- Identify stakeholders and develop communication plan
+- Develop weekly status report template and meeting cadence
+- Finalize project plan and stakeholder communication materials
+- Engage ServiceNow partners and client architects
+- Determine ServiceNow environment strategy
+- Align with client's ServiceNow governance and operating rhythms
+- Establish Steering Committee composition and Deloitte Risk Panel
 
-## Delivery Framework: Imagine → Deliver → Run
+### SET — Kickoff Execution (Week 1)
+- Issue communications to stakeholders and schedule standing working sessions
+- Prepare baseline design workflows, wireframes, and functional demos
+- Develop project management routines and templates
+- Conduct Ways of Working session
+- Stand up project governance (Steering Committee meeting 1)
+- Deliver project kickoff presentation
 
-### Phase 1: Imagine (Plan + Design)
-**PMBOK**: Initiating + Planning | **Agile**: Inception, Discovery
-
-#### Objectives
-- Define program scope, objectives, and success criteria
-- Design solution architecture and entity framework
-- Establish governance model and RACI
-- Identify integrations, data migration needs, and training requirements
-- Produce Functional Design Document (FDD) and Technical Design Document (TDD)
-
-#### Key Deliverables
-- Program Charter
-- Functional Design Document (FDD)
-- Technical Design Document (TDD)
-- Entity Framework Design
-- Integration Architecture
-- Data Migration Plan
-- Training Plan
-- Risk Register (Initial)
-
-#### Quality Gates
-- Architecture Review Board (ARB) sign-off on entity framework
-- Client sign-off on FDD and TDD before Deliver phase begins
-- Integration design reviewed by platform architect
-
----
-
-### Phase 2: Deliver (Build + Test + Close)
-**PMBOK**: Executing, M&C, Closing | **Agile**: Sprint cycles, UAT, release
-
-#### Sprint Ceremonies (Deloitte Standard)
-
-| Ceremony | Timing | Duration | Purpose |
-|----------|--------|----------|---------|
-| Sprint Planning | Day 1 | Half-day | Confirm DoR; review capacity; assign stories; team commits |
-| Daily Standup | Daily | 15 min | Yesterday / Today / Impediments |
-| Backlog Refinement | Ongoing | As needed | READY stories prepared for next sprint |
-| Sprint Review/Demo | Day 10 | 2 hours | Stakeholder demo; DoD consensus; unmet stories carry |
-| Sprint Retrospective | Day 10 | 1 hour | Like / Learn / Lack / Long For |
-
-#### Definition of Ready (DoR)
-Before a story enters a sprint:
-- [ ] Scope defined
-- [ ] Acceptance criteria written
-- [ ] Dependencies cleared
-- [ ] Capacity confirmed
-- [ ] Test approach identified
-
-#### Definition of Done (DoD)
-Before a story is marked complete:
-- [ ] Configured in DEV
-- [ ] Unit tested
-- [ ] Peer reviewed
-- [ ] Demo-ready
-- [ ] Documented
-- [ ] DoD consensus from team
-
-#### Velocity Tracking
-- Rolling 2-sprint average velocity
-- Blocker escalation: >2 days → PM; >3 days → Steering Committee
-
-#### UAT Standards
-- UAT scripts written from acceptance criteria
-- Defect severity: Critical, High, Medium, Low
-- Critical/High defects block go-live sign-off
-- UAT sign-off required from designated client leads (Lauren for ERM; Jennifer for VCS)
+### GO — Active Delivery
+- Rapid, inclusive, and iterative design sessions per module (up to 5 client employees per use case)
+- Reach key design decisions through facilitated demos and analysis
+- Walk through design documentation and workflows for core team feedback
+- Document material changes and open decisions
+- Develop target state object model and core data model
+- Apply configuration/integration standards with ongoing quality reviews
+- Change analysis and user adoption planning
+- Role-based training design
 
 ---
 
-### Phase 3: Run (Hypercare + Managed Service)
-**PMBOK**: M&C in sustain mode | **Agile**: Kanban
+## 2. Governance Model
 
-#### Hypercare Window
-- Duration: 2 weeks post-go-live (Verizon: 3/13 → 3/27)
-- Staffing: Full delivery team on standby
-- Incident response SLA: P1 = 4 hours; P2 = 8 hours; P3 = next business day
-- Daily stand-up during hypercare
+### Governance Structure
 
-#### Transition to BAU
-- Managed Service agreement activated
-- Support model and escalation path documented
-- Admin team certified (ServiceNow Admin)
-- Runbook delivered (admin guide, integration operations, user guide)
-- Vendor freeze lifted after hypercare close
+| Body | Composition | Cadence | Purpose |
+|------|-------------|---------|---------|
+| **Steering Committee** | Client executive sponsor + program leads; Deloitte engagement partner + program manager | Bi-weekly | Milestone review, escalation resolution, strategic decisions, budget and scope oversight |
+| **Deloitte Risk Panel** | Deloitte senior leaders; internal quality and risk oversight | As needed (at major milestones) | Internal Deloitte governance; quality assurance; escalation support; delivery risk review |
+| **Project Status Meeting** | PMs (client + Deloitte), workstream leads | Weekly | RAID review, milestone tracking, blocker resolution, sprint status |
+| **Design / Working Sessions** | SMEs, workstream leads, Deloitte functional team | Per module (Imagine) | Requirements, design decisions, sign-off |
+| **Sprint Ceremonies** | Delivery team | Per sprint cadence | Planning, standup, demo, retro |
 
----
+### Decision Rights
 
-## Governance Model
+| Decision Type | Who Decides | Who Approves | Who is Informed |
+|--------------|-------------|--------------|-----------------|
+| Scope change | PM (client) | Executive Sponsor | Steering Committee |
+| Configuration design | Workstream Lead (Deloitte) | Functional Lead | PM |
+| Customization approval (High/Very High) | Solution Architect + Client IT | Program Manager + Executive Sponsor | Steering Committee |
+| Go-live authorization | PM (client) + PM (Deloitte) | Executive Sponsor | All stakeholders |
+| Key design decisions (framework, platform) | Deloitte guidance + client leadership | Executive Sponsor | Steering Committee |
+| Sprint commitment | Scrum team | Product Owner | PM |
 
-### Steering Committee
-- **Frequency**: Monthly (or as-needed for critical decisions)
-- **Members**: Merlyn (CSG sponsor), Tony Scott, Sudhakar Sivasubramanian, Clark Johnson
-- **Purpose**: Program status, scope changes, go/no-go decisions, budget/resource approvals
-
-### Delivery Team Standup
-- **Frequency**: Daily
-- **Members**: Full delivery team
-- **Format**: Yesterday / Today / Impediments
-
-### Architecture Review Board (ARB)
-- **Members**: Tony Scott (chair), Vidhya Sagar, Arav Sundareswaran
-- **Triggers**: Custom development proposals, integration architecture changes, entity framework changes
+### Escalation Path
+1. Team level — resolve within sprint
+2. Workstream Lead — resolve within 2 business days
+3. Program Manager — resolve within 3 business days
+4. Steering Committee — next scheduled session or emergency session
+5. Deloitte Risk Panel — escalated by Deloitte engagement leadership for delivery risk issues
 
 ---
 
-## RAID Management
+## 3. PMO Setup & Operating Rhythm
 
-| Category | Definition | Review Frequency |
-|----------|-----------|-----------------|
-| **R**isks | Potential future issues; probability × impact assessed | Weekly |
-| **A**ssumptions | Stated program assumptions | Monthly or when challenged |
-| **I**ssues | Active problems requiring resolution | Daily (standup); Weekly (PM review) |
-| **D**ecisions | Key decisions made and pending | Sprint close; Steering Committee |
+### PMO Standup at Engagement Launch
+The PMO is operational before client kickoff. At minimum, the following must be in place on Day 1:
+- Project plan baselined in agreed project tracking tool
+- RAID log template distributed and populated with known items
+- Status report template agreed with client PM
+- All standing meeting invites sent and accepted
+- Communication plan approved
+- Document repository structure set up (SharePoint, Confluence, or agreed platform)
 
-### Escalation Thresholds
-- Issue open > 2 business days: PM escalation
-- Issue open > 3 business days: Steering Committee notification
-- Risk probability > 70% + High impact: Immediate PM + client notification
+### Weekly Status Report Distribution
+- Prepared by Deloitte PM; reviewed by engagement lead before distribution
+- Distributed 24 hours before weekly status meeting
+- Recipients: all Steering Committee members + workstream leads
+- Contains: executive summary, health dashboard, accomplishments, next week plan, RAID highlights, decisions needed
 
----
+### RAID Log Operating Rules
+- Reviewed at every weekly status meeting — not quarterly, not ad hoc
+- Every risk with High Impact + High Probability: documented mitigation AND contingency
+- Issues open >5 business days without progress: escalate to Steering Committee agenda
+- Assumptions violated: convert to Issues immediately; do not leave in Assumptions category
 
-## Quality Standards
-
-### Artifact Standards
-- All deliverables in Deloitte template format
-- Client-facing artifacts use "1Risk" (not "ServiceNow")
-- No placeholder content in client-delivered artifacts
-- Version control: Major.Minor (e.g., 1.0 = approved; 1.1 = minor revision; 2.0 = major revision)
-
-### Code / Configuration Standards
-- All customizations in scoped application (never global)
-- Update Sets: one per story or change, named descriptively
-- DEV → TEST/UAT → PROD promotion only (never manual changes in TEST or PROD)
-- Code review required before TEST promotion
-
-### Communication Standards
-- Status reports: Weekly (internal); Bi-weekly (client)
-- Executive communication: crisp Issue → Impact → Ask format
-- All written communications timestamped and filed in project SharePoint
+### Document Management Standards
+- All deliverables version-controlled with date and version number in filename
+- Draft documents distributed with clear "DRAFT — NOT FOR DISTRIBUTION" watermark
+- Final documents require client sign-off before baseline; signed copy retained
+- Configuration workbook maintained in real-time — not updated retrospectively
 
 ---
 
-*Reference document. Deloitte delivery standards are non-negotiable on Verizon OneRisk engagement. Deviations require PM + client lead approval.*
+## 4. Deloitte Risk Panel
+
+The Risk Panel is Deloitte's internal governance mechanism for engagement oversight. It is not a
+client-facing body but its findings directly influence engagement delivery decisions.
+
+### Risk Panel Triggers (when to convene)
+- End of Imagine phase — before Deliver kickoff
+- Significant scope change request
+- At-risk delivery status sustained for >2 consecutive reporting periods
+- Major technical architecture decision
+- Go-live authorization
+- Any event that could materially affect Deloitte's delivery quality or client relationship
+
+### Risk Panel Inputs
+- Current project status report
+- RAID log
+- Open key design decisions
+- Budget and schedule variance analysis
+- Technical architecture summary
+- Client satisfaction signals
+
+### Risk Panel Outputs
+- Guidance on delivery approach adjustments
+- Escalation decisions (when to involve Deloitte executive leadership with client)
+- Quality review directives (when to conduct independent configuration review)
+
+---
+
+## 5. Stakeholder Communication Approach
+
+### Communication Planning (Imagine Phase Activity)
+
+**Stakeholder analysis dimensions:**
+- Influence (High / Medium / Low) — ability to affect the project
+- Interest (High / Medium / Low) — degree of impact from the project outcome
+- Current sentiment (Champion / Supporter / Neutral / Skeptic / Blocker)
+- Target sentiment (what we need them to be by go-live)
+
+**Engagement strategies by profile:**
+- High influence + High interest: Collaborate — active participants in design sessions and governance
+- High influence + Low interest: Consult — keep informed; seek input on key decisions
+- Low influence + High interest: Inform — regular status updates; include in demos
+- Low influence + Low interest: Monitor — minimal engagement; ensure they have access to updates
+
+### Communication Channels and Standards
+| Channel | Purpose | Cadence | Owner |
+|---------|---------|---------|-------|
+| Weekly Status Report | Overall project health | Weekly | Deloitte PM |
+| Steering Committee Deck | Executive milestone and decision updates | Bi-weekly | Deloitte PM + Engagement Lead |
+| Sprint Demo | Working software showcase | Every 2 weeks | Workstream Lead |
+| Design Workshop Outputs | Decision log and open items | Post each workshop | Functional Lead |
+| RAID Log | Living risk and issue register | Continuous; reviewed weekly | Deloitte PM |
+| Ad Hoc Escalation | Urgent issues requiring immediate action | As needed | PM or Engagement Lead |
+
+---
+
+## 6. Engagement Environment Strategy
+
+### Standard Instance Configuration
+The environment strategy is confirmed during the Ways of Working session and locked before Sprint 1.
+
+| Environment | Purpose | Managed By | Refresh Cadence |
+|------------|---------|-----------|-----------------|
+| DEV | Active development and unit testing | Deloitte (with client IT) | As needed |
+| TEST / QA | SIT and UAT | Client IT | Pre-SIT, pre-UAT |
+| PROD | Live environment | Client IT | Post go-live authorization only |
+| TRAINING (optional) | End-user training post-UAT | Client IT | Post-UAT |
+
+### Instance Governance Rules
+- All development in DEV only — no direct TEST or PROD modifications
+- Update Sets: one per sprint per module; committed and exported at sprint close
+- No admin accounts used for day-to-day development — scoped developer accounts only
+- PROD access for Deloitte team: time-bounded, documented, revoked at engagement close
+- ServiceNow release: minimum Zurich; Xanadu or current preferred
+
+### ServiceNow Workspaces UI
+Deloitte's standard is to use the Workspaces UI across all ServiceNow IRM modules. Classic UI
+is not the delivery target. Confirm Workspaces availability in the client's ServiceNow instance
+during the Ways of Working session.

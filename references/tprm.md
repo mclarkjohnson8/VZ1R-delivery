@@ -1,201 +1,174 @@
-# ServiceNow IRM: Third-Party Risk Management (TPRM) Reference
-## Verizon OneRisk TPRM | Deloitte | ServiceNow IRM (Zurich)
+# Third Party Risk Management (TPRM) Reference
+
+## Table of Contents
+1. Module Overview
+2. TPRM Data Model
+3. Vendor Onboarding Design
+4. Assessment Framework
+5. Vendor Tiering
+6. Continuous Monitoring
+7. Common Configuration Decisions
+8. Anti-Patterns
 
 ---
 
-## Overview
+## 1. Module Overview
 
-ServiceNow TPRM (Third-Party Risk Management) automates the lifecycle of third-party risk from vendor onboarding through ongoing monitoring and offboarding. For Verizon OneRisk, TPRM is the primary in-scope module — the migration from the legacy Vendor Risk application to TPRM is the core deliverable of this engagement.
+ServiceNow TPRM operationalizes third-party risk identification, assessment, monitoring, and issue
+management across the vendor lifecycle — from onboarding through offboarding.
 
----
-
-## Module Architecture
-
-### Core Objects
-
-| Object | Description |
-|--------|-------------|
-| **Third-Party Profile (TPR)** | Master record for a vendor/third-party. Contains tier, risk rating, contacts, and all associated records. |
-| **Engagement** | An assessment event against a vendor. Links to the assessment questionnaire and response workflow. |
-| **Assessment (IRQ/DDQ)** | The questionnaire sent to or completed about a vendor. IRQ = Risk Intelligence; DDQ = Due Diligence. |
-| **Response Portal** | The vendor-facing portal where third parties complete self-assessment questionnaires. |
-| **Risk** | Third-party risk records created from assessment findings or external signals. |
-| **Issue** | Active problem requiring remediation. Linked to TPR and entity. |
-| **Finding** | Individual assessment finding. Can aggregate into Issues or Risks. |
-| **Contact** | Vendor-side individual associated with a TPR record. |
-| **Attachment** | Evidence documents, contracts, certifications linked to TPR or Engagement. |
+**Primary Use Cases:**
+- Vendor risk assessments (inherent and control-based)
+- Vendor tiering and prioritization
+- Continuous monitoring (news feeds, questionnaire-based, KRI tracking)
+- Regulatory-driven vendor due diligence (OCC, DORA, FTC, state regulations)
+- Fourth-party risk (sub-processor and downstream vendor tracking)
 
 ---
 
-## TPRM Lifecycle
+## 2. TPRM Data Model
 
-```
-Onboard → Profile → Assess → Risk-Rate → Monitor → Review → Offboard
-```
+### Core Tables
+- `sn_vendor_profile` — Vendor entity record (extends `sn_grc_entity`)
+- `sn_vendor_risk_assessment` — Assessment instance for a vendor
+- `sn_vendor_contact` — Vendor-side contacts for assessment distribution
+- `sn_vendor_risk` — Vendor-specific risk records (integrates with Risk module)
+- `sn_vendor_document` — Contracts, certifications, SOC reports stored against vendor
 
-### 1. Vendor Onboarding
-- New vendor request created (manual or via integration trigger)
-- Vendor entity created in entity framework
-- TPR record created with tier assignment
-- Initial data population (contacts, contract data from Ariba)
-- Vendor portal credentials issued (if self-assessment applicable)
-
-### 2. Vendor Profiling
-- Tier assignment based on: data access, spend, operational dependency, geographic/regulatory exposure
-- Tier-based assessment schedule (Tier 1: annual DDQ + quarterly IRQ; Tier 2: annual; Tier 3: periodic)
-- Risk appetite alignment: high-tier vendors receive enhanced scrutiny
-
-### Vendor Tier Model
-
-| Tier | Risk Level | Assessment Frequency | Assessment Types |
-|------|-----------|---------------------|-----------------|
-| Tier 1 — Critical | High | Annual DDQ + Quarterly IRQ | Full DDQ + IRQ + Interviews |
-| Tier 2 — High | Medium-High | Annual | DDQ + IRQ |
-| Tier 3 — Medium | Medium | Bi-annual | Abbreviated DDQ |
-| Tier 4 — Low | Low | Triennial or event-driven | Lite assessment |
-
-### 3. Assessment (IRQ / DDQ)
-
-#### IRQ — Risk Intelligence Questionnaire
-- Scoring-enabled questionnaire
-- Assesses vendor risk posture across domains: Security, Business Continuity, Privacy, Financial
-- Outputs: Risk score, risk tier (confirmation or tier change), recommended actions
-- Verizon config: bias factor resolved via admin config (maximize normalized input + metric weight adjustment)
-
-#### DDQ — Due Diligence Questionnaire
-- Comprehensive due diligence
-- Covers: corporate governance, financial stability, security program, BCM/DR, privacy, compliance, sub-processors
-- Outputs: Findings, issues, remediation requests, risk decisions
-
-### 4. Risk Rating
-- Risk calculated from: IRQ score + BitSight signal + DDQ findings + manual adjustments
-- Risk response options: Accept (with approval), Mitigate (remediation plan), Transfer (contractual), Avoid (offboard)
-- Risk acceptance requires documented approval (see Risk module reference)
-
-### 5. Ongoing Monitoring
-- **BitSight**: Continuous external threat intelligence feed
-  - Component 1 (OOB): Scores + alert intake → displayed in TPRM dashboard
-  - Component 2 (custom, in progress): Alert → 1Risk Issue generation
-- **Avetta**: Fourth-party contractor management data
-- **Ariba**: Contract status, renewal dates, financial data
-- **EHS**: Environmental/Health/Safety signals
-- Assessment review triggered by: scheduled cycle, material change, signal threshold breach
-
-### 6. Vendor Offboarding
-- Contract expiry or termination triggers offboarding workflow
-- Data retention review (per Verizon data governance policy)
-- TPR record archived (not deleted — audit trail required)
-- Access revoked: vendor portal, any integrations
-- Outstanding issues resolved or formally deferred
+### Vendor as Entity
+TPRM vendors are entities within the Entity Framework. This means:
+- Entity class = Vendor (or sub-classes: Software Vendor, Service Provider, Cloud Provider, etc.)
+- Entity tier drives assessment frequency and depth
+- All risk, issues, and audit records can be scoped to vendor entities
 
 ---
 
-## Assessment Workflow (Engagement Lifecycle)
+## 3. Vendor Onboarding Design
 
-```
-Create Engagement → Assign to Vendor → Send Assessment → Vendor Responds → 
-Review Responses → Score/Rate → Create Findings → Risk Decision → Close
-```
+### Onboarding Workflow Stages
+1. **Intake:** Business requestor submits new vendor request (name, category, service description, estimated spend)
+2. **Preliminary Screening:** Risk team reviews; assigns initial tier; determines assessment depth
+3. **Vendor Questionnaire:** Send inherent risk questionnaire to vendor contact
+4. **Due Diligence Review:** Review questionnaire responses + third-party evidence (SOC 2, ISO cert, pen test results)
+5. **Risk Scoring:** Score vendor on key risk dimensions; determine residual tier
+6. **Approval:** Risk owner approves or escalates based on residual tier
+7. **Onboarding Complete:** Vendor profile activated; monitoring schedule set; contract reference linked
 
-### Engagement States
-
-| State | Description |
-|-------|-------------|
-| Draft | Engagement created; not yet sent |
-| Sent | Assessment sent to vendor (portal notification) |
-| In Progress | Vendor completing responses |
-| Under Review | Responses submitted; under internal review |
-| Remediation | Findings sent to vendor for remediation |
-| Closed | Assessment cycle complete; outcomes documented |
-
----
-
-## Vendor Portal
-
-The Vendor Portal allows third-party vendors to:
-- Complete self-assessment questionnaires
-- Upload evidence documents
-- Respond to remediation requests
-- View their risk status (configurable)
-
-**Verizon status**: Vendor portal restored to OOB functionality. Data replication fixed. Self-service re-enabled. Password/notification workflow confirmed.
+### Key Onboarding Data Points to Capture
+- Legal entity name, primary business address, parent company
+- Service/product category and description
+- Data access: types of data shared (PII, PHI, financial, IP), sensitivity level
+- System access: which internal systems vendor can access, access type (read/write/admin)
+- Sub-processors: does vendor use fourth parties who also access our data?
+- Certifications held: SOC 2 Type II, ISO 27001, PCI-DSS, etc. (with expiration dates)
+- Contract reference: MSA, SOW, DPA
+- Business owner: who in the organization owns this vendor relationship
 
 ---
 
-## Integration Architecture (Verizon-Specific)
+## 4. Assessment Framework
 
-### BitSight (External Risk Intelligence)
+### Assessment Types
 
-#### Component 1 — OOB (Active)
-- **Plugin**: ServiceNow OOB BitSight integration
-- **Data flow**: BitSight API → MID Server → Staging table → TPRM entity records
-- **Data types**: Company scores, industry benchmarks, alert feeds
-- **Status**: ✅ Functional. UAT underway.
+| Type | When Used | Delivery Method | Frequency |
+|------|-----------|-----------------|-----------|
+| Inherent Risk Questionnaire | At onboarding; determines initial tier | Portal / Email | Once (plus annual refresh) |
+| Control Assessment | For Tier 1/2 vendors; evaluates control environment | Portal / Email | Annual (Tier 1), Bi-annual (Tier 2) |
+| Abbreviated Assessment | Tier 3/4 vendors | Email questionnaire | Annual |
+| Event-Triggered Assessment | After security incident, breach, M&A at vendor | Ad hoc | As needed |
+| Fourth-Party Assessment | When sub-processors are identified | Portal / Email | Annual for critical sub-processors |
 
-#### Component 2 — Custom (In Progress)
-- **Design**: BitSight alert → enhanced findings logic → 1Risk GRC Issue creation
-- **Defect**: Known ServiceNow bug — issues generated only for operational alerts, not critical
-- **Status**: 🔴 Active blocker. Fix in development. Scope decision required by 2026-03-09.
-- **Decision**: Include at go-live (with customization) or defer to hypercare sprint?
+### Assessment Domain Coverage (Standard)
+- Information Security (access controls, encryption, vulnerability management, incident response)
+- Data Privacy (data handling, retention, deletion, consent management, breach notification)
+- Business Continuity (BCP/DRP, RTO/RPO, testing history)
+- Compliance (regulatory certifications, audit findings, regulatory actions)
+- Financial Stability (for critical vendors — financial health indicators)
+- Operational (SLA history, personnel practices, key-person dependency)
 
-### Avetta (Fourth-Party / Contractor Data)
-- **Purpose**: Contractor management and compliance data for subcontractor population
-- **Data flow**: Avetta API → Staging → TPRM entity enrichment
-- **Current issue**: Staging environment connectivity broken (subro instance policy change; Avetta-side server error)
-- **Status**: 🔴 Active blocker. ETA resolution: 24 hours from 2026-03-05.
-- **Long-term**: Subro endpoint exposure needed for resilient integration
-
-### Ariba (Contracting Data)
-- **Purpose**: Contract data, renewal dates, spend data → vendor profile enrichment
-- **Data flow**: Ariba API → Staging → TPRM entity (contract fields)
-- **Current issue**: Stage environment misconfiguration
-- **Status**: 🟡 In Progress. Ariba team remediating.
-
-### EHS (Environmental/Health/Safety)
-- **Purpose**: EHS compliance data for vendor risk profiles
-- **Status**: ⏳ Integration training scheduled 2026-03-10.
+### Scoring Approach
+- Domain-level scoring: each domain scored independently
+- Composite score: weighted average of domain scores
+- Weighting should reflect the client's risk priorities (e.g., data-heavy companies weight Privacy higher)
+- Inherent risk score + control score → residual risk score → final vendor tier assignment
 
 ---
 
-## Role Matrix
+## 5. Vendor Tiering
 
-| Role | OOB Role Name | Access |
-|------|---------------|--------|
-| TPRM Manager | sn_vdr_risk.manager | Full CRUD on TPR records, engagements, assessments |
-| TPRM Analyst | sn_vdr_risk.analyst | Create/update engagements, findings, issues |
-| TPRM Reader | sn_vdr_risk.read | Read-only access |
-| Vendor Portal User | sn_vdr_risk.vendor_portal | Vendor self-service portal only |
-| Risk Manager | sn_risk.manager | Risk acceptance, risk register management |
+### Standard Tiering Model
 
----
+| Tier | Label | Criteria | Assessment Depth | Frequency |
+|------|-------|----------|-----------------|-----------|
+| 1 | Critical | Access to sensitive data; mission-critical service; no substitution possible; high spend | Full assessment + independent validation | Quarterly monitoring; annual full assessment |
+| 2 | High | Significant data access or operational dependency; viable alternatives exist | Standard assessment | Semi-annual monitoring; annual assessment |
+| 3 | Medium | Limited data access; non-critical service; standard contractual protections sufficient | Abbreviated assessment | Annual |
+| 4 | Low | No data access; commodity service; easily replaceable | Self-certification or registration only | Bi-annual or on-change |
 
-## Questionnaire Library (Verizon Rationalized — 11 of 21)
+### Tiering Criteria Scoring Card
+Design a tiering scorecard clients complete at onboarding, scoring each dimension:
 
-| # | Questionnaire | Type | Tier Applicability |
-|---|--------------|------|-------------------|
-| 1 | IRQ — Standard | IRQ | Tier 1, 2, 3 |
-| 2 | DDQ — Full | DDQ | Tier 1 |
-| 3 | DDQ — Abbreviated | DDQ | Tier 2, 3 |
-| 4 | IT Security Assessment | DDQ supplement | Tier 1 (IT vendors) |
-| 5 | Business Continuity Assessment | DDQ supplement | Tier 1 (critical) |
-| 6 | Privacy / Data Protection | DDQ supplement | Tier 1 (data-handling) |
-| 7 | Financial Stability | DDQ supplement | Tier 1 (high-spend) |
-| 8 | Fourth-Party Sub-Processor | DDQ supplement | Avetta-type vendors |
-| 9 | EHS Assessment | Domain-specific | EHS-regulated vendors |
-| 10 | New Vendor Onboarding Lite | Onboarding | All new vendors |
-| 11 | Annual Re-attestation | Attestation | Tier 3, Tier 4 |
+| Dimension | Weight | Score 1 | Score 2 | Score 3 |
+|-----------|--------|---------|---------|---------|
+| Data Sensitivity | 25% | No sensitive data | Internal/confidential | PII/PHI/financial/regulated |
+| System Access | 20% | No system access | Read-only | Read/write or privileged |
+| Operational Dependency | 20% | Easily replaceable | Moderate dependency | Mission critical; no substitute |
+| Regulatory Obligation | 20% | None | Indirect | Direct regulatory requirement |
+| Annual Spend | 15% | <$100K | $100K-$1M | >$1M |
+
+Final score maps to Tier 1-4 assignment.
 
 ---
 
-## TPRM Reporting & Dashboards
+## 6. Continuous Monitoring
 
-| Dashboard | Audience | Key Metrics |
-|-----------|----------|------------|
-| Executive TPRM Summary | Merlyn, Sudhakar, Tony | Risk exposure, open criticals, go-live readiness |
-| TPRM Operational Dashboard | Heidi, team | Open assessments, issues, overdue items |
-| Vendor Risk Scorecard | VCS/ERM leads | Per-vendor risk scores, BitSight trends |
-| Integration Health Dashboard | Gary Vick, Vidhya | MID Server status, API health, error rates |
+### Monitoring Inputs
+- **Assessment refresh cadence** (per tier — see above)
+- **Certification expiration tracking** (SOC 2, ISO certs stored in vendor profile with expiration dates; automated alerts before expiry)
+- **Adverse news monitoring** (integration with news/risk intelligence feeds — BitSight, SecurityScorecard, Dun & Bradstreet)
+- **Incident notification tracking** (vendor-reported incidents; regulatory breach notifications)
+- **SLA performance data** (if operationally integrated)
+
+### Automated Alerts to Configure
+- Certification expiring in 60/30 days → notify vendor manager
+- Assessment overdue (vendor has not responded in 14 days) → escalate to vendor manager
+- High-severity incident reported by vendor → trigger event-based assessment
+- Vendor tier change (upgrade or downgrade) → notify business owner
+
+### ⚠️ Risk: Monitoring Without Response Protocols
+Continuous monitoring is only valuable if there are defined response protocols. Configure
+alert workflows with clear escalation paths and response SLAs, not just notification emails.
 
 ---
 
-*Reference document. TPRM is the primary in-scope module. Current sprint (Sprint 12 of 12) — Go-Live: 2026-03-13. See engagement-state.json for current issue status.*
+## 7. Common Configuration Decisions
+
+| Decision | Option A | Option B | Recommendation |
+|----------|----------|----------|----------------|
+| Vendor portal | Use ServiceNow vendor portal for external questionnaires | Email-based questionnaire distribution | Vendor portal for Tier 1/2; email acceptable for Tier 3/4 |
+| Fourth-party tracking | Track sub-processors in ServiceNow | Track in separate register | Track critical sub-processors in ServiceNow; lower-risk in separate register |
+| Assessment distribution | Risk team sends to vendor | Business owner sends to vendor | Risk team owns; business owner co-signed on communication |
+| SOC report review | Upload and manually review | Automated control mapping from SOC | Manual for Phase 1; explore automation in Phase 2 |
+| Offboarding workflow | Manual offboarding process | Automated offboarding triggered by contract end | Configure automated trigger; include data deletion confirmation step |
+
+---
+
+## 8. Anti-Patterns
+
+**Anti-Pattern: Tier 1 for Everything**
+Same pattern as entity tiering — clients want all vendors at Tier 1. Apply the tiering scorecard
+rigorously. Most enterprises have 5-15 Tier 1 vendors and hundreds at Tier 3/4.
+
+**Anti-Pattern: Sending Assessments Without Vendor Contacts Configured**
+Assessment emails go to nobody. Before launching the first assessment cycle, validate that every
+in-scope vendor has a named contact with a valid email in the vendor profile.
+
+**Anti-Pattern: TPRM as a One-Time Exercise**
+Clients complete vendor onboarding assessments and consider TPRM "done." The value is in
+continuous monitoring and periodic reassessment. Configure the re-assessment schedule and
+assign a TPRM program manager before go-live.
+
+**Anti-Pattern: No Integration with Contract Management**
+Vendor profiles without contract references create governance gaps. Connect vendor records to
+contract data at minimum by reference (contract number, expiration date, DPA reference).
+Full CLM integration is Phase 2.

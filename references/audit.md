@@ -1,123 +1,164 @@
-# ServiceNow IRM: Audit Management Reference
-## Verizon OneRisk TPRM | Deloitte | ServiceNow IRM (Zurich)
+# Audit Management Reference
+
+## Table of Contents
+1. Module Overview
+2. Audit Data Model
+3. Audit Planning
+4. Engagement Execution
+5. Findings & Issue Integration
+6. Workpaper Management
+7. Common Configuration Decisions
+8. Anti-Patterns
 
 ---
 
-## Overview
+## 1. Module Overview
 
-ServiceNow Audit Management is an IRM module that automates the internal audit lifecycle from planning through issue tracking. It integrates natively with Risk, Compliance, and TPRM modules.
+ServiceNow Audit Management operationalizes the internal audit lifecycle: annual audit plan,
+individual engagement scoping, fieldwork execution, findings management, and issue integration.
 
----
-
-## Module Architecture
-
-### Core Objects
-
-| Object | Description |
-|--------|-------------|
-| **Audit Engagement** | Top-level audit entity. Contains scope, schedule, team, and status. |
-| **Audit Task** | Individual work item within an engagement. |
-| **Audit Test** | Specific test procedure for a control or risk area. |
-| **Audit Finding** | Identified exception, gap, or risk from testing. |
-| **Audit Issue** | Formal issue requiring remediation. Linked to Risk module. |
-| **Audit Report** | Structured deliverable — draft, review, issued. |
-| **Audit Entity** | The organizational unit, vendor, or system being audited. |
+**Primary Use Cases:**
+- Annual audit universe and risk-based audit planning
+- Engagement management (scope, schedule, assign, execute)
+- Audit finding capture and rating
+- Finding → Issue integration for remediation tracking
+- Audit committee reporting
 
 ---
 
-## Audit Lifecycle
+## 2. Audit Data Model
 
+### Core Tables
+- `sn_audit_engagement` — Individual audit engagement record
+- `sn_audit_task` — Workstream or fieldwork task within an engagement
+- `sn_audit_finding` — Finding identified during audit
+- `sn_audit_workpaper` — Evidence and documentation for audit tasks
+- `sn_audit_plan` — Annual audit plan record
+
+### Hierarchy
 ```
-Plan → Scope → Fieldwork → Reporting → Issue Tracking → Close
+Annual Audit Plan
+└── Audit Engagement (e.g., "IT General Controls Audit Q3")
+    ├── Audit Tasks (e.g., "Test user access reviews")
+    │   └── Workpapers (evidence attached)
+    └── Audit Findings
+        └── Issues (auto-created or linked via integration)
 ```
 
-### 1. Planning
-- Annual/Rolling Audit Universe definition
-- Risk-ranked audit schedule
-- Resource allocation
-- Engagement creation and team assignment
+---
 
-### 2. Scoping
-- Scope definition (entities, processes, controls)
-- Audit approach selection (controls-based, risk-based, hybrid)
-- Materiality thresholds set
+## 3. Audit Planning
 
-### 3. Fieldwork
-- Audit Tasks assigned to team members
-- Evidence collection (document uploads, interview notes)
-- Control testing via Audit Tests
-- Finding documentation (preliminary)
+### Audit Universe
+The audit universe is the complete inventory of auditable entities, processes, and controls.
+- Source from Entity Framework — every auditable entity should be in the entity hierarchy
+- Rate each audit subject by inherent risk, last audit date, regulatory significance
+- Risk-rate the universe to drive annual plan prioritization
 
-### 4. Reporting
-- Draft Audit Report generation
-- Management response workflow
-- Report review and approval chain
-- Issued Report with management action plans
+### Annual Audit Plan Configuration
+- Create audit plan record for the fiscal year
+- Populate planned engagements with: entity/scope, audit type, planned start/end, resource estimate
+- Get audit plan approved by audit committee before Sprint 1 (if Audit is in scope for Phase 1)
+- Track plan vs. actual throughout the year (planned engagements vs. completed)
 
-### 5. Issue Tracking
-- Findings converted to Audit Issues
-- Remediation plans assigned with due dates
-- Issue aging and escalation rules
-- Closure verification
+### Resource Planning
+- Audit staff assignments: hours by engagement × staff × quarter
+- Track utilization across planned engagements
+- Reserve capacity for unplanned/ad hoc audits (typically 15-20% of total capacity)
 
 ---
 
-## Integration with TPRM
+## 4. Engagement Execution
 
-For the Verizon OneRisk engagement, Audit Management intersects with TPRM in:
+### Engagement Lifecycle States (OOB)
+Planning → Fieldwork → Reporting → Closed
 
-- **Third-Party Audits**: Audit Engagements can be scoped to Vendor entities from the TPRM module
-- **Finding Cross-Reference**: Audit Findings linked to Third-Party Risks
-- **Issue Linkage**: Audit Issues can originate from TPRM assessment findings
-- **Shared Entity Framework**: Both modules operate against the same entity hierarchy
+### Standard Audit Deliverable Workflows (Deloitte Baseline)
+These four workflows are the standard delivery baseline for Audit Management:
 
----
+1. **Audit Plans & Audit Engagements** — annual plan creation, engagement scheduling from plan, resource assignment
+2. **Audit Control Test Workflow** — control test steps executed within engagement tasks; evidence attached; pass/fail recorded
+3. **Audit Observation Workflow** — observation/finding creation, rating, management response capture, agreement on remediation date
+4. **Audit Evidence Request Workflow** — formal evidence requests issued to process owners; evidence submission tracked; status visible to auditor
 
-## OOTB Configuration Standards
+### Engagement Planning Checklist
+- [ ] Scope and objectives defined
+- [ ] Entity/process owner notified
+- [ ] Engagement team assigned
+- [ ] Audit program (control objectives and test steps) created from template
+- [ ] Kick-off meeting scheduled and pre-read distributed
 
-### Always Use OOB For:
-- Audit Engagement lifecycle states
-- Finding severity classification (Critical, High, Medium, Low, Informational)
-- Report approval workflows
-- Issue aging / escalation rules
-- Management response workflows
+### Audit Tasks
+- Each task maps to a control objective or audit step
+- Task owner = assigned auditor
+- Task status tracks fieldwork progress
+- Workpapers attached to tasks as evidence
 
-### Documented Customization Justification Required For:
-- Custom finding categories beyond OOB taxonomy
-- Non-standard approval chains
-- Custom reporting beyond standard templates
-- Integrations with external audit management tools
+### Finding Rating Scale
 
----
-
-## Role Matrix
-
-| Role | OOB Role Name | Access Level |
-|------|---------------|-------------|
-| Audit Manager | sn_audit.manager | Full CRUD on engagements, tasks, findings, reports |
-| Audit Analyst | sn_audit.analyst | Create/update tasks, tests, findings |
-| Audit Reader | sn_audit.read | Read-only access to all audit content |
-| Control Owner | sn_compliance.control_owner | Respond to control testing requests |
-| Management Reviewer | sn_audit.management_reviewer | Review and respond to draft reports |
+| Rating | Definition |
+|--------|------------|
+| Critical | Significant deficiency; immediate risk of financial loss, regulatory action, or operational disruption |
+| High | Material weakness; requires prompt remediation |
+| Medium | Control gap; addressable within standard remediation cycle |
+| Low | Minor observation; best practice recommendation |
+| Informational | Positive observation or process improvement opportunity |
 
 ---
 
-## Key Configuration Settings (Zurich)
+## 5. Findings & Issue Integration
 
-- **Engagement Approvals**: Configurable multi-step approval chain before engagement activation
-- **Materiality Thresholds**: Set at department or engagement level
-- **Finding Aggregation**: Auto-group related findings into single issues
-- **SLA Definitions**: Configurable response windows per finding severity
-- **Attestation**: Periodic control attestation separate from engagement lifecycle
+### Finding → Issue Integration (Key Configuration)
+When a finding meets severity threshold (Critical or High), automatically create an Issue record:
+- Finding severity → Issue priority mapping (1:1 recommended)
+- Finding owner → Issue owner (or configurable default)
+- Finding due date → Issue remediation due date
+- Link maintained between Finding and Issue for traceability
+
+### Management Response Workflow
+- Finding draft → Entity/process owner provides management response
+- Management response captured on finding record
+- Agreed remediation date and owner captured
+- Auditor validates response adequacy before closing finding
 
 ---
 
-## Verizon-Specific Notes
+## 6. Workpaper Management
 
-- Audit module is in scope for Phase 2 (post-TPRM go-live)
-- TPRM findings should be tagged for potential audit follow-up
-- Vendor audit history integration with TPRM entity records is in the roadmap
+### Workpaper Structure
+- One workpaper per audit task (minimum)
+- Workpaper contains: objective, procedures performed, evidence reviewed, conclusion
+- Evidence attached as files to workpaper record
+- Workpaper review/approval by audit manager before task closure
+
+### Evidence Retention
+- Configure retention policy aligned to client's records retention schedule
+- Typical: 7 years for SOX-related workpapers; 3-5 years for operational
+- ServiceNow supports attachment lifecycle management — configure per policy
 
 ---
 
-*Reference document. See `references/tprm.md` for current-sprint module details.*
+## 7. Common Configuration Decisions
+
+| Decision | Option A | Option B | Recommendation |
+|----------|----------|----------|----------------|
+| Audit program templates | Build per engagement | Reusable program templates by audit type | Reusable templates; build library during Imagine |
+| Finding distribution | Auditor emails draft findings | Portal-based management response workflow | Portal workflow for scale; email acceptable for small audit teams |
+| Engagement calendar | Manual scheduling | Automated scheduling from audit plan | Automate from plan; manual override available |
+| Workpaper review | Single-level (manager) | Multi-level (manager + quality review) | Single-level for Phase 1; add QA layer in Phase 2 |
+
+---
+
+## 8. Anti-Patterns
+
+**Anti-Pattern: Building Audit Without a Rationalized Audit Universe**
+If the audit universe isn't defined, scope for every engagement becomes a negotiation. Build the
+universe in Imagine phase.
+
+**Anti-Pattern: No Agreed Finding Rating Scale**
+When auditors and management disagree on finding ratings, findings get downgraded before reaching
+leadership. Lock the rating scale and escalation thresholds before go-live.
+
+**Anti-Pattern: Treating Audit as Standalone**
+Audit findings that don't integrate with Issues and Risk create a closed-loop problem — audit work
+doesn't drive remediation or risk profile updates. Integration with Issues module is non-negotiable.

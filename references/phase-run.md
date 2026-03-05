@@ -1,144 +1,266 @@
-# ServiceNow IRM: Run Phase Reference
-## Verizon OneRisk TPRM | Deloitte | ServiceNow IRM (Zurich)
+# Run Phase Artifacts Reference
+
+## Table of Contents
+1. Phase Overview
+2. Hypercare Plan
+3. Hypercare Issue Tracker
+4. SLA/KPI Framework
+5. Knowledge Transfer Plan
+6. Runbook Template
+7. Lessons Learned
+8. Project Closure Checklist
 
 ---
 
-## Overview
+## 1. Phase Overview
 
-The Run phase covers hypercare, stabilization, and transition to business-as-usual (BAU) managed service operations. For Verizon OneRisk, the Run phase begins at go-live (2026-03-13) and hypercare closes on 2026-03-27. This document describes the operational model, support framework, and BAU procedures.
+**Run** encompasses Hypercare (stabilization) and the transition to Business-as-Usual (BAU) or
+a managed service model.
 
----
+Hypercare typically runs 4-8 weeks post go-live for standard IRM implementations; complex or
+enterprise-wide rollouts may warrant 8-12 weeks.
 
-## Run Phase Objectives
-
-1. Support stable go-live operations through the hypercare window
-2. Resolve P1/P2 incidents within SLA
-3. Complete the transition from delivery team to managed service / BAU operations
-4. Hand off knowledge: admin documentation, runbooks, support procedures
-5. Capture and action post-go-live enhancements
-
----
-
-## Hypercare Model (2026-03-13 → 2026-03-27)
-
-### Staffing Model
-
-| Role | Hypercare Status | Post-Hypercare |
-|------|-----------------|----------------|
-| Clark Johnson (PM) | Available | Transitions to oversight |
-| Heidi (Functional Lead) | Full presence | Transitions to BAU support |
-| Vidhya Sagar (Architect) | On call | Transitions to managed service |
-| Alec Barone (Developer) | Available | Transitions as needed |
-| Gary Vick (Integrations) | On call | Available for integration issues |
-| Tony Scott (Architect) | Available for escalations | Advisory role |
-
-### Hypercare Incident Response SLAs
-
-| Priority | Definition | Response | Resolution Target |
-|----------|-----------|----------|------------------|
-| **P1 — Critical** | System down; core TPRM workflow broken; data integrity issue | 4 hours | Same business day |
-| **P2 — High** | Major feature broken; business impact; no workaround | 8 hours | Next business day |
-| **P3 — Medium** | Feature impaired; workaround available | Next business day | Within 5 business days |
-| **P4 — Low** | Minor issue; cosmetic; enhancement | 3 business days | Managed service backlog |
-
-### Hypercare Daily Standup
-- **Frequency**: Daily during hypercare window
-- **Time**: [To be set at go-live]
-- **Participants**: Clark, Heidi, Vidhya, VZ operations lead
-- **Format**: Incident review → Resolution status → New issues → Actions
+Exit criteria before declaring project closure:
+- [ ] All hypercare issues resolved or formally transitioned to BAU backlog
+- [ ] Runbook published and accepted by operational team
+- [ ] Knowledge transfer completed and signed off
+- [ ] SLA/KPI baseline established
+- [ ] Lessons learned documented and distributed
+- [ ] Project closure document signed by executive sponsor
 
 ---
 
-## Post-Go-Live Watch Items
+## 2. Hypercare Plan
 
-| Item | Risk Level | Owner | Monitoring |
-|------|-----------|-------|------------|
-| BitSight C2 (if deferred) | Medium | Heidi / Vidhya | Daily check on issue generation |
-| Avetta production stability | Medium | Gary Vick | Daily API health check |
-| IRQ scoring accuracy | Medium | Heidi | Validate with live vendor data |
-| Notification volume | Low | Heidi | Track daily volume vs. baseline |
-| Vendor portal performance | Low | Vidhya | Monitor page load times |
-| VCS Outbound API (ISS-005) | Medium | Tony / Arav | Architecture sprint scheduling |
+### Required Sections
 
----
+**1. Hypercare Scope**
+Which modules, entities, and user groups are covered. What is explicitly out of scope (e.g., Phase 2 modules
+not yet live).
 
-## Transition to BAU
+**2. Hypercare Duration & Exit Criteria**
 
-### Transition Checklist (by 2026-03-27)
+| Week | Focus | Exit Gate |
+|------|-------|-----------|
+| 1-2 | Stabilization — high-touch support; daily check-ins | P1 issue rate drops below threshold |
+| 3-4 | Optimization — address P2/P3 backlog; user adoption monitoring | P2 resolution complete |
+| 5-6 | Transition — knowledge transfer; runbook validation | KT sign-off obtained |
+| 7-8 | Exit — final assessment; BAU handoff | Closure criteria met |
 
-#### Knowledge Transfer
-- [ ] Admin Guide delivered and reviewed by Verizon admin team
-- [ ] Integration Operations Runbook delivered
-- [ ] User Guide delivered (TPRM Manager, Analyst, Vendor Portal roles)
-- [ ] Training sessions complete (7 of 7)
-- [ ] Hypercare findings documented and actioned or logged for managed service
+**3. Support Model During Hypercare**
 
-#### Technical Handoff
-- [ ] ServiceNow Admin role granted to Verizon admin team
-- [ ] MID Server credentials and documentation transferred
-- [ ] Integration credentials documented in Connection Aliases (not hardcoded)
-- [ ] Update Set inventory finalized
-- [ ] Performance baseline documented
+| Support Tier | Scope | Response SLA | Contact Method |
+|-------------|-------|-------------|----------------|
+| Tier 1 (Client Help Desk) | Basic user questions, access issues | 4 business hours | Ticketing system |
+| Tier 2 (Consultant Functional) | Configuration questions, process issues | 1 business day | Dedicated channel |
+| Tier 3 (Consultant Technical) | System errors, integration failures, data issues | 4 hours (P1), 1 day (P2) | Direct escalation |
+| Tier 4 (ServiceNow Support) | Platform defects, licensing | Per contract | ServiceNow portal |
 
-#### Process Handoff
-- [ ] Support model activated (service desk integration or direct ServiceNow support)
-- [ ] Escalation path documented (Level 1 → Level 2 → Platform support)
-- [ ] Change management process defined (who approves changes post-BAU)
-- [ ] TPRM operational calendar established (assessment cycles, review cadences)
+**4. Staffing Plan**
+Consultant team availability by week (full-time vs. reduced capacity) and client operational team
+members taking ownership during transition.
 
-#### Governance Handoff
-- [ ] Steering Committee meeting to formally close delivery engagement
-- [ ] Lessons learned captured (retrospective)
-- [ ] Post-go-live enhancement backlog documented (ISS-005, BitSight C2 if deferred, etc.)
+**5. Issue Management During Hypercare**
+All hypercare issues logged in tracker; triage daily for first 2 weeks, then 3x/week.
+P1 issues have dedicated war-room response; P2+ follow standard SLA.
+
+**6. Communication During Hypercare**
+- Daily standup (Weeks 1-2): 15 min; consultant + client operational leads
+- Weekly hypercare status report to executive sponsor
+- Issue summary distributed to stakeholders weekly
 
 ---
 
-## BAU Operating Model
+## 3. Hypercare Issue Tracker
 
-### Platform Operations
-- **Instance monitoring**: ServiceNow OOB monitoring + custom dashboards
-- **Plugin/patch updates**: Coordinate with Verizon IT for quarterly ServiceNow releases
-- **Performance monitoring**: Review quarterly; flag degradation proactively
-- **Integration health**: MID Server status; API error rates; integration logs
+### Schema
 
-### TPRM Operational Calendar
+| Issue ID | Title | Module | Severity | Reported By | Date Reported | Description | Root Cause | Resolution | Owner | Target Date | Status | Date Closed | Type |
+|----------|-------|--------|----------|-------------|---------------|-------------|------------|------------|-------|-------------|--------|-------------|------|
 
-| Activity | Frequency | Owner |
-|----------|-----------|-------|
-| New vendor onboarding | As needed | TPRM Manager |
-| IRQ scoring review | Quarterly | TPRM Manager + ERM |
-| DDQ campaigns | Annual (per vendor tier) | TPRM Manager |
-| BitSight score review | Monthly | TPRM Analyst |
-| Risk acceptance review | Quarterly | Risk Manager |
-| Access review (RBAC) | Semi-annual | System Admin |
-| Policy/notification review | Annual | TPRM Manager |
+### Type Classifications
+- **Defect:** System not behaving as designed
+- **Enhancement Request:** New capability not in original scope — log as backlog item; do not fix during hypercare without scope approval
+- **User Error:** Training gap; address with targeted coaching
+- **Data Issue:** Data quality problem introduced during cutover or by users
+- **Process Issue:** Business process not aligned to system design; requires process intervention
 
-### Change Management Post-BAU
-- All changes require documented business justification
-- Configuration changes follow DEV → TEST → PROD path (no exceptions)
-- Custom code changes require architect review (Tony Scott / Vidhya Sagar advisory)
-- ServiceNow upgrades (major releases): Deloitte upgrade assessment recommended
+### ⚠️ Risk: Enhancement Requests Disguised as Defects
+Users frequently log "the system doesn't do X" as a defect when X was never in scope. Gate every
+incoming issue against the UAT sign-off baseline. If it wasn't tested and approved, it's not a defect.
 
 ---
 
-## Hypercare Close Criteria
+## 4. SLA/KPI Framework
 
-Hypercare closes on 2026-03-27 if:
-- [ ] No open P1 or P2 incidents
-- [ ] All critical go-live issues resolved or tracked in managed service backlog with owners
-- [ ] Transition checklist 100% complete
-- [ ] Verizon operations lead confirms readiness
-- [ ] Steering Committee formally accepts go-live completion
+### Operational KPIs to Establish at Go-Live
+
+**System Health KPIs:**
+
+| KPI | Definition | Target | Measurement |
+|-----|------------|--------|-------------|
+| System Availability | % uptime during business hours | >99.5% | ServiceNow platform monitoring |
+| Average Page Load Time | Seconds for primary IRM pages | <3 seconds | Performance analytics |
+| Scheduled Job Success Rate | % of scheduled assessment/notification jobs completing | >98% | Job log review |
+
+**Process Health KPIs (Customize per Module):**
+
+| Module | KPI | Definition | Target |
+|--------|-----|------------|--------|
+| Risk | Risk Assessment Completion Rate | % of scheduled assessments completed on time | >90% |
+| Risk | Average Residual Risk Score | Aggregate residual risk across Tier 1 entities | Establish baseline |
+| PCM | Control Attestation Completion Rate | % of attestations completed by due date | >85% |
+| PCM | Overdue Attestation Rate | % of attestations past due | <5% |
+| Audit | Finding Remediation Rate | % of findings remediated within SLA | >80% |
+| Issues | Average Issue Age (Open) | Avg days open for unresolved issues | <30 days |
+| Issues | SLA Breach Rate | % of issues past remediation due date | <10% |
+| TPRM | Vendor Assessment Completion Rate | % of scheduled assessments completed | >85% |
+
+### KPI Reporting Cadence
+- Weekly during hypercare
+- Monthly post-hypercare (BAU)
+- Quarterly executive summary to sponsor
 
 ---
 
-## Vendor Freeze Lift (2026-03-17)
+## 5. Knowledge Transfer Plan
 
-The vendor freeze (no changes to legacy Vendor Risk system) lifts on 2026-03-17 regardless of hypercare status. After 3/17:
-- Legacy system decommission planning can begin
-- New vendor onboarding goes exclusively through 1Risk (TPRM)
-- Legacy data archival plan to be executed within 90 days
+### KT Scope
+
+| Topic | Format | Audience | Owner | Completion Target |
+|-------|--------|----------|-------|-------------------|
+| System administration | Hands-on walkthrough + documentation | Client IT Admin | Tech Lead | Week 5 |
+| Module configuration and maintenance | Recorded walkthrough + runbook | Module Owners | Functional Lead | Week 5 |
+| User support and troubleshooting | Q&A session + FAQ document | Help Desk / Tier 1 Support | Functional Lead | Week 4 |
+| Reporting and dashboards | Live session + guide | Risk/Compliance Managers | Functional Lead | Week 5 |
+| Platform upgrade preparation | Documentation + checklist | Client IT | Tech Lead | Week 6 |
+
+### KT Sign-Off Criteria
+Each KT session should conclude with the recipient confirming:
+- [ ] I can perform this task independently
+- [ ] I know where to find the documentation
+- [ ] I know the escalation path if I encounter an issue beyond my scope
+
+### ⚠️ Risk: KT Treated as a Checkbox
+KT is not a document drop. Require live demonstration from the client team — have them perform
+the task while the consultant observes. If they can't, the KT is not complete.
 
 ---
 
-*Reference document. Run phase begins 2026-03-13. This document governs hypercare operations and BAU transition.*
+## 6. Runbook Template
+
+### Runbook Sections
+
+**1. System Overview**
+Brief description of the ServiceNow IRM environment: instance URL(s), modules in scope, key integrations,
+and admin contacts.
+
+**2. Instance Access & Administration**
+
+| Task | Steps | Notes |
+|------|-------|-------|
+| Admin login | | |
+| User provisioning | | |
+| Role assignment | | |
+| Update Set management | | |
+
+**3. Routine Operations by Module**
+For each module, document:
+- Scheduled jobs and their purpose
+- Routine maintenance tasks (data cleanup, archive, etc.)
+- How to launch and close assessment cycles
+- How to handle common exceptions (failed job, unassigned record, etc.)
+
+**4. Integration Monitoring**
+For each integration:
+- What it does
+- How to verify it's running
+- What a failure looks like
+- How to restart / remediate
+
+**5. Common Issues & Resolutions**
+
+| Symptom | Likely Cause | Resolution Steps |
+|---------|-------------|-----------------|
+
+**6. ServiceNow Upgrade Procedure**
+- Pre-upgrade checklist
+- Upgrade execution steps
+- Post-upgrade validation checklist
+- Rollback procedure
+- Custom code regression test list
+
+**7. Support Escalation Path**
+Who to call, when, and how — from Tier 1 through ServiceNow Support.
+
+**8. Change Management Process**
+How to request, approve, test, and deploy configuration changes post-go-live.
+Enforce: all changes via Update Sets; no direct PROD modifications.
+
+---
+
+## 7. Lessons Learned
+
+### Facilitation Approach
+Conduct a structured lessons learned session at project close (or end of hypercare).
+Use a retrospective format: What went well? What could be improved? What do we do differently next time?
+Separate client-facing version (delivery experience) from internal version (engagement execution).
+
+### Lessons Learned Template
+
+**Project Information:**
+- Project Name, Client, Duration, Modules Delivered, Team Size
+
+**Delivery Performance Summary:**
+
+| Dimension | Planned | Actual | Variance | Notes |
+|-----------|---------|--------|----------|-------|
+| Duration | | | | |
+| Budget | | | | |
+| Scope (stories delivered) | | | | |
+| Defect count (P1/P2) | | | | |
+| UAT cycles required | | | | |
+
+**What Went Well:**
+(Narrative + bullet list — practices to replicate)
+
+**What Could Be Improved:**
+(Narrative + bullet list — be specific and constructive; avoid blame)
+
+**Recommendations for Future Engagements:**
+(Actionable guidance for the next team)
+
+**Risks That Materialized:**
+(Which RAID risks actually occurred; was the mitigation effective)
+
+**Client Satisfaction Summary:**
+(Qualitative summary; include any formal CSAT scores if available)
+
+---
+
+## 8. Project Closure Checklist
+
+### Deliverable Sign-Off
+- [ ] All Imagine deliverables signed off (charter, design docs, scoping matrix)
+- [ ] All Deliver deliverables signed off (build specs, UAT sign-off, go-live authorization)
+- [ ] All Run deliverables signed off (runbook, KT, hypercare exit)
+
+### Administrative Closure
+- [ ] Final project status report distributed
+- [ ] Lessons learned documented and distributed (internal + client versions)
+- [ ] Project files archived per firm policy
+- [ ] Consultant access to client systems deprovisioned (per agreed date)
+- [ ] Client access revocation confirmed for any consultant-provisioned test accounts
+- [ ] Invoicing complete; final invoice issued
+
+### Transition Confirmation
+- [ ] Client operational team confirmed as accountable for system going forward
+- [ ] Managed service engagement (if applicable) transitioned and active
+- [ ] Client confirmed receipt of all deliverables
+- [ ] Executive sponsor sign-off on project closure obtained
+
+### Internal Closure
+- [ ] Engagement code closed
+- [ ] Team performance documentation completed
+- [ ] Reference-able client relationship confirmed with sponsor
+- [ ] Case study / win wire submitted (if applicable and approved by client)
